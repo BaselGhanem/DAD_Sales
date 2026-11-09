@@ -1,0 +1,421 @@
+{
+  "version": 1,
+  "users": [
+    {
+      "id": "mr001",
+      "name": "احمد ابو محفوظ",
+      "role": "rep",
+      "teams": [
+        "URO"
+      ],
+      "enabled": true,
+      "passwordHash": "399d2456f5365522bee8750c37dc48c0c4e431d703305f1dbc6efbc0b0775a5b"
+    },
+    {
+      "id": "mr002",
+      "name": "احمد الرواشده",
+      "role": "rep",
+      "teams": [
+        "Azord",
+        "Clavodar",
+        "Matador",
+        "Mixif",
+        "URO"
+      ],
+      "enabled": true,
+      "passwordHash": "c4d13c229a04df1630e116cb950c87c31dbf67f7c461c4bee46fa6044e6a9259"
+    },
+    {
+      "id": "mr003",
+      "name": "احمد حماد",
+      "role": "rep",
+      "teams": [
+        "URO"
+      ],
+      "enabled": true,
+      "passwordHash": "1ab0991b1cd4a958b8839a83d04e029e1efc8af10358732c2b46488e6ee57691"
+    },
+    {
+      "id": "mr004",
+      "name": "احمد عوده",
+      "role": "rep",
+      "teams": [
+        "Clavodar"
+      ],
+      "enabled": true,
+      "passwordHash": "cd1b3ff4c41598a6050138b8eeb9089fd01b5da044067da93a616ef2749b7959"
+    },
+    {
+      "id": "mr005",
+      "name": "احمد عياد",
+      "role": "rep",
+      "teams": [
+        "URO"
+      ],
+      "enabled": true,
+      "passwordHash": "05f520d98c1a1ceb6b0795e810313a130c129d0d3b676fd9863916f88799e761"
+    },
+    {
+      "id": "mr006",
+      "name": "اريج الشنار",
+      "role": "rep",
+      "teams": [
+        "URO"
+      ],
+      "enabled": true,
+      "passwordHash": "93cf4aa8257abaa89451c7827681bf381f2763ad771ae941fc252c5d24635575"
+    },
+    {
+      "id": "mr007",
+      "name": "اسلام حمدان",
+      "role": "rep",
+      "teams": [
+        "Matador"
+      ],
+      "enabled": true,
+      "passwordHash": "f767ee6febfe5230088ed84010e9961143865b3271e11fdb0d9dd2e0e67eae78"
+    },
+    {
+      "id": "mr008",
+      "name": "براء عليمات",
+      "role": "rep",
+      "teams": [
+        "Matador"
+      ],
+      "enabled": true,
+      "passwordHash": "40f6355e2aca96ef3ad6116f9423dde879a2c22b328e8981ccb5a973d36216ae"
+    },
+    {
+      "id": "mr009",
+      "name": "جوزيف منير",
+      "role": "rep",
+      "teams": [
+        "Matador"
+      ],
+      "enabled": true,
+      "passwordHash": "1c838bf8452643ec91740b5fba4cf134ed033ef77cbde7f38547012b47e7f99d"
+    },
+    {
+      "id": "mr010",
+      "name": "حسام السعدي",
+      "role": "rep",
+      "teams": [
+        "Azord"
+      ],
+      "enabled": true,
+      "passwordHash": "37ef2fac10011726f1bc24592c55c46c5b2c732f2a3b6c40ac375d6a2dd6e334"
+    },
+    {
+      "id": "mr011",
+      "name": "حمزه العجلوني",
+      "role": "rep",
+      "teams": [
+        "Azord"
+      ],
+      "enabled": true,
+      "passwordHash": "1655e997db453c0275414f8a68beae4d525ca54190c32642b0977832ff9c5288"
+    },
+    {
+      "id": "mr012",
+      "name": "حمزه حسن",
+      "role": "rep",
+      "teams": [
+        "Clavodar",
+        "Matador",
+        "Mixif"
+      ],
+      "enabled": true,
+      "passwordHash": "a5f943f61c950e0e9fb15bdaaa81dc7d070b1097ab58f3a78f94948ecd62e482"
+    },
+    {
+      "id": "mr013",
+      "name": "حنين شحاده",
+      "role": "rep",
+      "teams": [
+        "Clavodar"
+      ],
+      "enabled": true,
+      "passwordHash": "f8caa011e712a14511ec88ef0796f4374266af15fb3d39c0459f3530c43e981f"
+    },
+    {
+      "id": "mr014",
+      "name": "خالد شحاده",
+      "role": "rep",
+      "teams": [
+        "Cardio 2"
+      ],
+      "enabled": true,
+      "passwordHash": "653da3c3cfab4f1942e37d140e57a0eff947864f28086f1fb75d00adff47e6cb"
+    },
+    {
+      "id": "mr015",
+      "name": "ديانا شديفات",
+      "role": "rep",
+      "teams": [
+        "Cardio 3"
+      ],
+      "enabled": true,
+      "passwordHash": "ff3e27f529e77233a33b334822373182ab7793b0723aa189ab0a232e99f6ecd3"
+    },
+    {
+      "id": "mr016",
+      "name": "ديما حطيني",
+      "role": "rep",
+      "teams": [
+        "Cardio 2"
+      ],
+      "enabled": true,
+      "passwordHash": "d09eb910fc0a29632fdce593dc5827904188193b5f4ab413352d10fb022ee9d6"
+    },
+    {
+      "id": "mr017",
+      "name": "رؤى الرشدان",
+      "role": "rep",
+      "teams": [
+        "Cardio 3"
+      ],
+      "enabled": true,
+      "passwordHash": "aa38d328e5803f254c2b7c18ff0cdb0a4346de3c75fe3e68de09232b753236ae"
+    },
+    {
+      "id": "mr018",
+      "name": "راما العجلوني",
+      "role": "rep",
+      "teams": [
+        "Matador"
+      ],
+      "enabled": true,
+      "passwordHash": "0835eecd8ee9929a29de00a6372f7f7b485db775294f7bac410cc8bcea2b2638"
+    },
+    {
+      "id": "mr019",
+      "name": "رنيم طعاني",
+      "role": "rep",
+      "teams": [
+        "Mixif"
+      ],
+      "enabled": true,
+      "passwordHash": "4eef6efcb81d88628cbc5b0597d3d93bcd6079cb7a3602f6843703f7b8f8b46b"
+    },
+    {
+      "id": "mr020",
+      "name": "رهف حمد",
+      "role": "rep",
+      "teams": [
+        "Clavodar"
+      ],
+      "enabled": true,
+      "passwordHash": "cf079683661b54e590fbfc20300ae37ce0818b04b9af701e7ee3218719d63c80"
+    },
+    {
+      "id": "mr021",
+      "name": "زيد ابو السمن",
+      "role": "rep",
+      "teams": [
+        "Cardio 1"
+      ],
+      "enabled": true,
+      "passwordHash": "bcdd07f431ea1f5777759a7e6e2d77ea3a68c71e46f2f29342ff02c7e8873e9c"
+    },
+    {
+      "id": "mr022",
+      "name": "سالي حبش",
+      "role": "rep",
+      "teams": [
+        "Cardio 2"
+      ],
+      "enabled": true,
+      "passwordHash": "b37979171dd53361d250dafc5cc2f01503501b2717072c0d4aad28a0df725e05"
+    },
+    {
+      "id": "mr023",
+      "name": "صفا الحديدي",
+      "role": "rep",
+      "teams": [
+        "Cardio 1"
+      ],
+      "enabled": true,
+      "passwordHash": "fe07cf9562d9367428caa47fcd152bc2fcd71c9dbbea84249de19a74efaee232"
+    },
+    {
+      "id": "mr024",
+      "name": "طارق شموط",
+      "role": "rep",
+      "teams": [
+        "Azord"
+      ],
+      "enabled": true,
+      "passwordHash": "ea9d00140076d741b12d27eddd205de25e037cc4c4980e36e4b16de72aca9e71"
+    },
+    {
+      "id": "mr025",
+      "name": "عبد الرحمن ابو ديه",
+      "role": "rep",
+      "teams": [
+        "URO"
+      ],
+      "enabled": true,
+      "passwordHash": "404a77404747d17dd095f3cb39864c4862e89d4512ec6523d63aa7b6bf3b10ee"
+    },
+    {
+      "id": "mr026",
+      "name": "عبد الرحمن ادريس",
+      "role": "rep",
+      "teams": [
+        "Azord"
+      ],
+      "enabled": true,
+      "passwordHash": "56b4480d8076ef4d194bd95da071f96ee8a8d7c72fb2166067166e9375a7405d"
+    },
+    {
+      "id": "mr027",
+      "name": "عبد العزيز دباس",
+      "role": "rep",
+      "teams": [
+        "Matador"
+      ],
+      "enabled": true,
+      "passwordHash": "a352aa6f9d42996e4406ca3e6010d491478965bffebe1eef2ba0b8100e47206d"
+    },
+    {
+      "id": "mr028",
+      "name": "عبدالله الحياري",
+      "role": "rep",
+      "teams": [
+        "Clavodar"
+      ],
+      "enabled": true,
+      "passwordHash": "6c83caedd790d427892365afa998937317c4cb7e5730ed28c22d3eb753365906"
+    },
+    {
+      "id": "mr029",
+      "name": "عبير الشرع",
+      "role": "rep",
+      "teams": [
+        "Cardio 1",
+        "Cardio 2"
+      ],
+      "enabled": true,
+      "passwordHash": "8928438ba859b0d2980f5eca8f2f1aed45af28594eb215342f5f211f7312fb05"
+    },
+    {
+      "id": "mr030",
+      "name": "عمار ابو رمان",
+      "role": "rep",
+      "teams": [
+        "Mixif"
+      ],
+      "enabled": true,
+      "passwordHash": "c6f678d94fb864a60bd7acde0cfbb01d24ba878095a9e6206fde00e6ab138030"
+    },
+    {
+      "id": "mr031",
+      "name": "عمر العضايله",
+      "role": "rep",
+      "teams": [
+        "Mixif"
+      ],
+      "enabled": true,
+      "passwordHash": "c5d043df3021eeb350fa3c22c36198293f65027b890e321f7c6eb95e58e73775"
+    },
+    {
+      "id": "mr032",
+      "name": "عمر الليمون",
+      "role": "rep",
+      "teams": [
+        "Azord"
+      ],
+      "enabled": true,
+      "passwordHash": "90fc0d51db0612a11b36da38165d0847da2e5724fe1e0ff0d6ed5f7f24d0bf13"
+    },
+    {
+      "id": "mr033",
+      "name": "محمد التميمي",
+      "role": "rep",
+      "teams": [
+        "Cardio 4"
+      ],
+      "enabled": true,
+      "passwordHash": "1fea350e062eab9edb6a8aa9157347348d726caedbddb7449ff54be6ca56798d"
+    },
+    {
+      "id": "mr034",
+      "name": "محمد الفاعور",
+      "role": "rep",
+      "teams": [
+        "Mixif"
+      ],
+      "enabled": true,
+      "passwordHash": "760d19a87f4c097dcf63fcb70d42c116f661d7616ee2824d294374a99c40ad97"
+    },
+    {
+      "id": "mr035",
+      "name": "محمود ابو غريبه",
+      "role": "rep",
+      "teams": [
+        "Clavodar"
+      ],
+      "enabled": true,
+      "passwordHash": "ef7958f6f09ece50724e18f602398e472825aca918e39964e4b36e2aad19f041"
+    },
+    {
+      "id": "mr036",
+      "name": "مصطفى لحلوح",
+      "role": "rep",
+      "teams": [
+        "Mixif"
+      ],
+      "enabled": true,
+      "passwordHash": "466ad2e3225cb4ed16f2b910070c84851555566b9709de23336822292c8a2e4c"
+    },
+    {
+      "id": "mr037",
+      "name": "مهند عبد اللطيف",
+      "role": "rep",
+      "teams": [
+        "Cardio 1"
+      ],
+      "enabled": true,
+      "passwordHash": "575693cc166122994162ccf02e7a03f99c754679b03e367427a134891b82f0d3"
+    },
+    {
+      "id": "mr038",
+      "name": "هيا خماش",
+      "role": "rep",
+      "teams": [
+        "Cardio 3"
+      ],
+      "enabled": true,
+      "passwordHash": "888d21ba4cf21bf8b97012c0d38bf6b1f6a104fae76c2297a82e3fc4bd571680"
+    },
+    {
+      "id": "mr039",
+      "name": "يزن يونس",
+      "role": "rep",
+      "teams": [
+        "Clavodar"
+      ],
+      "enabled": true,
+      "passwordHash": "3c3f184f6017ee9346b31fa2d1d6e02cd9376d65a50b45a21686d5d5eb0c81a6"
+    },
+    {
+      "id": "mr040",
+      "name": "يوسف المومني",
+      "role": "rep",
+      "teams": [
+        "Hairgrow"
+      ],
+      "enabled": true,
+      "passwordHash": "210b7ceb70dfc97e60b4ee06e62644325145ba50a1c01e23948fc49ae827a34f"
+    }
+  ],
+  "supervisors": [],
+  "businessUnits": {
+    "chronic": {
+      "teams": []
+    },
+    "anti-infective": {
+      "teams": []
+    }
+  }
+}
