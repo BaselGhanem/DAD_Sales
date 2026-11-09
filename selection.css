@@ -1,0 +1,11 @@
+
+/* Shared selected-state fill for all selection groups, desktop and mobile. */
+body :is(.presets,.mobile-nav) button.active,
+body :is(.presets,.mobile-nav) button[aria-pressed="true"]{
+background:#099999;color:#fff;border-color:#099999;font-weight:700;box-shadow:0 3px 10px #09999920
+}
+body :is(.presets,.mobile-nav) button.active:hover,
+body :is(.presets,.mobile-nav) button[aria-pressed="true"]:hover{background:#087f83;border-color:#087f83;color:#fff}
+.customer-profile .toolbar .presets button{font-size:16px;padding:12px 20px;min-height:48px}
+.customer-profile .toolbar .dates label,.customer-profile .toolbar .dates input{font-size:14px}
+@media(max-width:680px){.customer-profile .toolbar .presets button{font-size:14px;padding:11px 12px}.customer-profile .toolbar .dates label{font-size:12px}.customer-profile .toolbar .dates input{font-size:13px}}
