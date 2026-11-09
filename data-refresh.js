@@ -1,0 +1,45 @@
+/* Reload open dashboards when the published workbook version changes. */
+(() => {
+  let version = null;
+  let checking = false;
+  let reloading = false;
+  let lastCheck = 0;
+  const fingerprint = headers => {
+    const etag = headers.get(`etag`);
+    if (etag) return etag;
+    const modified = headers.get(`last-modified`);
+    return modified ? `${modified}:${headers.get(`content-length`) || ``}` : null;
+  };
+  const update = () => {
+    if (reloading) return;
+    reloading = true;
+    const notice = document.createElement(`div`);
+    notice.setAttribute(`role`, `status`);
+    notice.dir = `rtl`;
+    notice.textContent = `تم تحديث ملف المبيعات، جاري تحميل النسخة الجديدة`;
+    Object.assign(notice.style, {position:`fixed`,inset:`0`,zIndex:`1000`,display:`grid`,placeItems:`center`,padding:`24px`,background:`#f4f8f9`,color:`#099999`,font:`700 17px/1.8 Almarai,Arial,sans-serif`,textAlign:`center`});
+    document.body.append(notice);
+    const url = new URL(location.href);
+    url.searchParams.set(`salesUpdate`, `${Date.now()}`);
+    location.replace(url.href);
+  };
+  async function check(force = false) {
+    if (checking || reloading || document.hidden || (!force && Date.now() - lastCheck < 25000)) return;
+    checking = true;
+    lastCheck = Date.now();
+    try {
+      const response = await fetch(`data/Up.xlsx?versionCheck=${Date.now()}`, {method:`HEAD`,cache:`no-store`,signal:AbortSignal.timeout(12000)});
+      if (!response.ok) return;
+      const next = fingerprint(response.headers);
+      if (!next) return;
+      if (version !== null && next !== version) { update(); return; }
+      version = next;
+    } catch { /* Retry automatically after connectivity returns. */ }
+    finally { checking = false; }
+  }
+  check(true);
+  setInterval(() => check(), 30000);
+  document.addEventListener(`visibilitychange`, () => { if (!document.hidden) check(true); });
+  window.addEventListener(`focus`, () => check());
+  window.addEventListener(`online`, () => check(true));
+})();
