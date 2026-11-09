@@ -13,3 +13,5 @@
 /* Readable table typography across sales, opportunities and customer profiles. */
 table{font-size:14px;line-height:1.8}th,td{padding:14px 10px}th{font-size:13px;font-weight:800}.customer-link{font-size:inherit}
 @media(max-width:680px){table{font-size:13px}td{font-size:13px;line-height:1.85;padding:6px 0}td::before{font-size:12px}tr{padding:14px 12px}}
+
+.opp-extra-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:18px}.opp-extra-filters label{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;min-width:0}.opp-extra-filters input,.opp-extra-filters select{width:100%;min-width:0;min-height:46px;border:1px solid #e3ecee;border-radius:10px;padding:10px;background:#fafcfc;font:400 13px Almarai,Arial,sans-serif}@media(max-width:680px){.opp-extra-filters{grid-template-columns:1fr 1fr}.opp-extra-filters label{font-size:11px}}
