@@ -3,7 +3,6 @@
   const SESSION_KEY = `dad_sales_session_v1`;
   const TITLES = {rep:`دخول المندوب الطبي`,supervisor:`دخول المشرف`,chronic:`Business Unit Chronic`,[`anti-infective`]:`Business Unit Anti Infective`};
   let config; let role = ``; let trigger; let busy = false;
-  const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
   const hash = async value => Array.from(new Uint8Array(await crypto.subtle.digest(`SHA-256`,new TextEncoder().encode(value)))).map(v=>v.toString(16).padStart(2,`0`)).join(``);
   const normalizePIN = value => value.replace(/[٠-٩]/g,c=>`${c.charCodeAt(0)-1632}`).replace(/[۰-۹]/g,c=>`${c.charCodeAt(0)-1776}`);
   const storage = {get(key){try{return localStorage.getItem(key)||sessionStorage.getItem(key)}catch{return null}},clear(){try{localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY)}catch{}},save(value,remember){try{this.clear();(remember?localStorage:sessionStorage).setItem(SESSION_KEY,JSON.stringify(value));return true}catch{return false}}};
@@ -36,11 +35,10 @@
   });
   $(`logout`).addEventListener(`click`,()=>{storage.clear();view(`roles`);document.querySelector(`[data-role]`).focus()});
   async function init(){
-    const start=Date.now();
     try{const response=await fetch(`accounts.json`,{cache:`no-store`});if(!response.ok)throw Error(`accounts`);config=await response.json();if(!Array.isArray(config.users))throw Error(`schema`);
       const value=storage.get(SESSION_KEY);if(value){try{const session=JSON.parse(value);const user=config.users.find(u=>u.enabled&&u.id===session.id&&u.role===session.role);if(user&&Number.isFinite(session.expiresAt)&&session.expiresAt>Date.now()&&session.savedAt<=Date.now())showSuccess(user);else storage.clear()}catch{storage.clear()}}
     }catch{config=null;}
-    finally{await pause(Math.max(0,2200-(Date.now()-start)));$(`loader`).classList.add(`out`);$(`app`).inert=false;await pause(450);$(`loader`).hidden=true;}
+    finally{$(`app`).inert=false;$(`loader`).hidden=true;}
   }
   init();
 })();
