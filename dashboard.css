@@ -34,3 +34,10 @@ table{font-size:14px;line-height:1.8}th,td{padding:14px 10px}th{font-size:13px;f
 @media(prefers-reduced-motion:reduce){.loading *{animation:none!important}.cinema-track span{transform:translateX(40%)}}
 
 .loading .loader-greeting{display:block;font:400 20px/1.6 Almarai,Arial,sans-serif;color:#d6e7ed;margin-bottom:-14px;animation:welcome-in 650ms ease both}.loading #loaderRepName{display:block;min-height:1.7em}
+
+/* Match the sales date toolbar to opportunities and follow-up priorities. */
+#salesView>.toolbar .presets button{font-size:16px;font-weight:700;padding:12px 20px;min-height:48px}
+#salesView>.toolbar .presets button.active{background:#099999;color:#fff;border-color:#099999;box-shadow:0 4px 12px #09999922}
+#salesView>.toolbar .dates label{font-size:14px}
+#salesView>.toolbar .dates input{font-size:14px;padding:10px}
+@media(max-width:680px){#salesView>.toolbar .presets button{font-size:14px;padding:11px 12px}#salesView>.toolbar .dates label{font-size:12px}#salesView>.toolbar .dates input{font-size:13px}}
