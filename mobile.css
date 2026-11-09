@@ -36,3 +36,5 @@ footer{margin-bottom:10px}
 .install-dialog{border:1px solid #e3ecee;border-radius:20px;max-width:360px;width:calc(100% - 32px);padding:24px;color:#123b55;font:14px/1.8 Almarai,Arial,sans-serif}
 .install-dialog::backdrop{background:#123b5580}.install-dialog h2{font-size:20px}.install-dialog button{border:0;border-radius:10px;background:#099999;color:white;padding:10px 20px;font:inherit;cursor:pointer}
 @media(display-mode:standalone){.install-button{display:none!important}}
+
+@media(max-width:680px){td{font-size:13px;line-height:1.85;padding:6px 0}.customer-link{font-size:13px}.section-head h2{font-size:15px}}
