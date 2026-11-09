@@ -1,0 +1,26 @@
+(() => {
+const $=id=>document.getElementById(id),S=Sales,n=n=>new Intl.NumberFormat(`en-US`,{maximumFractionDigits:2}).format(n),escape=s=>String(s??``).replace(/[&<>"']/g,c=>({[`&`]:`&amp;`,[`<`]:`&lt;`,[`>`]:`&gt;`,[`"`]:`&quot;`,[`'`]:`&#39;`})[c]);
+function compute(rows,owned,selected,areas,from,to){
+ const wanted=new Set(selected.length?selected:owned),own=new Set(owned),customers=new Map();
+ for(const r of rows){if(r.date<from||r.date>to||(areas.size&&!areas.has(r.area)))continue;let c=customers.get(r.customer);if(!c){c={customer:r.customer,name:r.customerName,areas:new Set(),last:``,otherValue:0,otherUnits:0,otherItems:new Map(),target:new Map()};customers.set(r.customer,c)}c.areas.add(r.area);
+ if(wanted.has(r.item))c.target.set(r.item,(c.target.get(r.item)||0)+r.units);
+ // Other company products always excludes every item in the representative's own portfolio.
+ if(!own.has(r.item)){c.otherValue+=r.value;c.otherUnits+=r.units;c.otherItems.set(r.item,(c.otherItems.get(r.item)||0)+r.units);if(r.units>0&&r.date>c.last)c.last=r.date}
+ }
+ return [...customers.values()].filter(c=>c.otherValue>0&&c.otherUnits>0&&[...c.target.values()].every(units=>units<=0)).sort((a,b)=>b.otherValue-a.otherValue);
+}
+window.OpportunityMath={compute};
+window.SalesOpportunities={init({rows,ownRows,latest}){
+ const owned=[...new Set(ownRows.map(r=>r.item))].sort((a,b)=>a.localeCompare(b)),allAreas=[...new Set(ownRows.map(r=>r.area))].sort((a,b)=>a.localeCompare(b,`ar`));let areas=new Set(),page=1,current=[];const from=$(`oppFrom`),to=$(`oppTo`),item=$(`oppItem`);
+ for(const value of owned)item.add(new Option(value,value));
+ from.value=`${latest.slice(0,4)}-01-01`;to.value=`${latest.slice(0,4)}-12-31`;
+ const options=$(`oppAreas`);for(const value of allAreas){const label=document.createElement(`label`),box=document.createElement(`input`);box.type=`checkbox`;box.onchange=()=>{box.checked?areas.add(value):areas.delete(value);render()};label.append(box,document.createTextNode(value));label.dataset.search=value;options.append(label)}
+ $(`oppAreaSearch`).oninput=e=>{for(const label of options.children)label.hidden=!label.dataset.search.includes(e.target.value)};
+ function table(){const pages=Math.max(1,Math.ceil(current.length/25));page=Math.min(page,pages);$(`oppRows`).innerHTML=current.slice((page-1)*25,page*25).map(c=>{const values=[c.name,[...c.areas].join(`، `),c.last?c.last.split(`-`).reverse().join(`/`):`—`,n(c.otherValue),n([...c.otherItems.values()].filter(v=>v>0).length)];const labels=[`العميل`,`المنطقة`,`اخر شراء من الاصناف الاخرى`,`صافي مشتريات الاصناف الاخرى`,`عدد الاصناف الاخرى`];return `<tr>${values.map((v,i)=>`<td data-label="${labels[i]}">${escape(v)}</td>`).join(``)}</tr>`}).join(``);$(`oppPage`).textContent=`${page} / ${pages}`;$(`oppPrev`).disabled=page<=1;$(`oppNext`).disabled=page>=pages}
+ function render(){if(!from.value||!to.value||from.value>to.value){$(`oppStatus`).textContent=`اختر فترة صحيحة`;return}page=1;current=compute(rows,owned,item.value?[item.value]:[],areas,from.value,to.value);$(`oppCount`).textContent=n(current.length);$(`oppValue`).textContent=n(current.reduce((s,c)=>s+c.otherValue,0));$(`oppAreaTitle`).textContent=`المنطقة${areas.size?` (${areas.size})`:`: الكل`}`;$(`oppStatus`).textContent=current.length?`${current.length} عميل مطابق للفترة والفلاتر`:`لا توجد فرص مطابقة للفترة والفلاتر`;$(`oppScope`).textContent=item.value?`صافي وحدات الصنف المحدد صفر او اقل`:`صافي وحدات كل صنف من اصنافك صفر او اقل`;table()}
+ for(const element of [from,to,item])element.onchange=render;
+ $(`oppMonth`).onclick=()=>{from.value=`${latest.slice(0,7)}-01`;to.value=latest;render()};$(`oppYear`).onclick=()=>{from.value=`${latest.slice(0,4)}-01-01`;to.value=`${latest.slice(0,4)}-12-31`;render()};$(`oppClear`).onclick=()=>{areas.clear();item.value=``;for(const box of options.querySelectorAll(`input`))box.checked=false;render()};$(`oppPrev`).onclick=()=>{page--;table()};$(`oppNext`).onclick=()=>{page++;table()};
+ function tab(name){const opportunity=name===`opportunities`;$(`salesView`).hidden=opportunity;$(`opportunities`).hidden=!opportunity;document.querySelectorAll(`[data-tab]`).forEach(b=>{const active=b.dataset.tab===name;b.classList.toggle(`active`,active);b.setAttribute(`aria-pressed`,`${active}`)});if(opportunity)$(`opportunities`).scrollIntoView({block:`start`,behavior:`auto`})}
+ document.querySelectorAll(`[data-tab]`).forEach(b=>b.addEventListener(`click`,()=>tab(b.dataset.tab)));document.querySelectorAll(`.mobile-nav [data-section]`).forEach(b=>b.addEventListener(`click`,()=>tab(`sales`),true));render();
+}};
+})();
