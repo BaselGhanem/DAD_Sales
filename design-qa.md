@@ -1,10 +1,11 @@
 # Design QA
 
-Source visual: OrderingSystem/login.html, desktop screenshot reviewed.
-Implementation: GitHub source uploaded; local browser preview returned upstream connection termination; live Pages URL did not render the app.
+Reference: existing approved login palette and uploaded Data / MTD / YTD Excel screenshots.
+Implementation: representative.html on GitHub Pages.
 
-Intentional changes: four roles, Almarai, teal #099999, loader and representative credentials.
-Visual comparison, responsiveness and app console inspection: blocked by preview transport.
-Checks passed: JS syntax; all 40 distinct PIN hashes; exact MR names and observed team associations; non-person labels excluded.
+Automated verification passed: JavaScript syntax; worker parses the actual uploaded XLSX; exact representative name projection; no Bonus in worker output; November reference reconciliation net 1917.94, units 359, active customers 7, movement rows 12; pure calculation tests for negative returns, positive-net customer counts, filter intersections, month-end dates and year boundaries.
+
+Live browser: published login rendered; navigating representative.html without session redirects to index.html as expected.
+Authenticated browser screenshot, responsive chart review, filter interaction review and console check remain pending secure sign-in. No claim of completed visual review.
 
 final result: blocked
