@@ -52,5 +52,5 @@
     finally{await finishLoading();}
   }
   init();
-  setInterval(async()=>{if(document.hidden||busy)return;try{const selected=$(`username`).value;config=await Credentials.load();if(role){populate();if(available().some(u=>u.id===selected))$(`username`).value=selected}}catch{}},30000);
+  setInterval(async()=>{if(document.hidden||busy)return;try{const selected=$(`username`).value;config=await Credentials.load();if(role){populate();if(available().some(u=>u.id===selected))$(`username`).value=selected}}catch{}},120000);
 })();
