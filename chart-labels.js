@@ -11,7 +11,8 @@
         if (!chart.isDatasetVisible(datasetIndex)) return;
         const meta = chart.getDatasetMeta(datasetIndex);
         const dense = !horizontal && dataset.data.length > 12;
-        ctx.font = `700 ${dense ? 9 : 10}px Almarai, Arial, sans-serif`;
+        const mobile = width < 500;
+        ctx.font = `700 ${dense ? 12 : mobile ? 13 : 14}px Almarai, Arial, sans-serif`;
         ctx.fillStyle = `#123b55`;
         ctx.strokeStyle = `rgba(255,255,255,0.96)`;
         ctx.lineWidth = 3;
