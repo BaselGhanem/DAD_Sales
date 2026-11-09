@@ -15,3 +15,20 @@ table{font-size:14px;line-height:1.8}th,td{padding:14px 10px}th{font-size:13px;f
 @media(max-width:680px){table{font-size:13px}td{font-size:13px;line-height:1.85;padding:6px 0}td::before{font-size:12px}tr{padding:14px 12px}}
 
 .opp-extra-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:18px}.opp-extra-filters label{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;min-width:0}.opp-extra-filters input,.opp-extra-filters select{width:100%;min-width:0;min-height:46px;border:1px solid #e3ecee;border-radius:10px;padding:10px;background:#fafcfc;font:400 13px Almarai,Arial,sans-serif}@media(max-width:680px){.opp-extra-filters{grid-template-columns:1fr 1fr}.opp-extra-filters label{font-size:11px}}
+
+/* Smooth representative welcome. */
+.loading{background:#0c293c;color:#fff;gap:20px;transition:opacity 350ms ease;overflow:hidden}
+.loading .loader-kicker{font:700 11px Almarai,Arial,sans-serif;letter-spacing:5px;color:#8ad5d0;animation:welcome-in 650ms ease both}
+.loading #loaderRepName{font-family:Almarai,Arial,sans-serif;direction:rtl;font-size:clamp(26px,5vw,48px);font-weight:800;text-align:center;max-width:90%;line-height:1.7;letter-spacing:0;animation:welcome-in 750ms 80ms ease both}
+.loading #loadText{font:400 13px Almarai,Arial,sans-serif;color:#bfd2db;animation:welcome-in 700ms 140ms ease both}
+.cinema-track{height:3px;width:170px;background:#ffffff18;border-radius:10px;overflow:hidden;direction:ltr}
+.cinema-track span{display:block;height:100%;width:55%;background:#65cfc5;border-radius:10px;animation:cinema-flow 1.5s cubic-bezier(.4,0,.2,1) infinite;will-change:transform}
+.loading.out{opacity:0;pointer-events:none}
+@keyframes cinema-flow{from{transform:translateX(-110%)}to{transform:translateX(300%)}}
+@keyframes welcome-in{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+#opportunities>.toolbar .presets button{font-size:16px;font-weight:700;padding:12px 20px;min-height:48px}
+#opportunities>.toolbar .presets button.active{background:#099999;color:#fff;border-color:#099999;box-shadow:0 4px 12px #09999922}
+#opportunities>.toolbar .dates label{font-size:14px}#opportunities>.toolbar .dates input{font-size:14px;padding:10px}
+#oppItemOptions label{user-select:none}#oppItemOptions input{accent-color:#099999;width:17px;height:17px}
+@media(max-width:680px){#opportunities>.toolbar .presets button{font-size:14px;padding:11px 12px}#opportunities>.toolbar .dates label{font-size:12px}#opportunities>.toolbar .dates input{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.loading *{animation:none!important}.cinema-track span{transform:translateX(40%)}}
