@@ -1,11 +1,11 @@
 (() => {
 const $=id=>document.getElementById(id),S=Sales,n=n=>new Intl.NumberFormat(`en-US`,{maximumFractionDigits:2}).format(n),escape=s=>String(s??``).replace(/[&<>"']/g,c=>({[`&`]:`&amp;`,[`<`]:`&lt;`,[`>`]:`&gt;`,[`"`]:`&quot;`,[`'`]:`&#39;`})[c]);
 function compute(rows,owned,selected,areas,from,to){
- const wanted=new Set(selected.length?selected:owned),own=new Set(owned),customers=new Map();
+ const wanted=new Set(selected.length?selected:owned),customers=new Map();
  for(const r of rows){if(r.date<from||r.date>to||(areas.size&&!areas.has(r.area)))continue;let c=customers.get(r.customer);if(!c){c={customer:r.customer,name:r.customerName,areas:new Set(),last:``,otherValue:0,otherUnits:0,otherItems:new Map(),target:new Map()};customers.set(r.customer,c)}c.areas.add(r.area);
  if(wanted.has(r.item))c.target.set(r.item,(c.target.get(r.item)||0)+r.units);
- // Other company products always excludes every item in the representative's own portfolio.
- if(!own.has(r.item)){c.otherValue+=r.value;c.otherUnits+=r.units;c.otherItems.set(r.item,(c.otherItems.get(r.item)||0)+r.units);if(r.units>0&&r.date>c.last)c.last=r.date}
+ // Other products are the complement of the selected item scope.
+ if(!wanted.has(r.item)){c.otherValue+=r.value;c.otherUnits+=r.units;c.otherItems.set(r.item,(c.otherItems.get(r.item)||0)+r.units);if(r.units>0&&r.date>c.last)c.last=r.date}
  }
  return [...customers.values()].filter(c=>c.otherValue>0&&c.otherUnits>0&&[...c.target.values()].every(units=>units<=0)).sort((a,b)=>b.otherValue-a.otherValue);
 }
