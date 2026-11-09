@@ -9,3 +9,7 @@
 .opp-field .options input{flex:0 0 auto;margin-top:4px}
 .opp-field input[type=radio]{accent-color:#099999}
 @media(max-width:680px){.opp-filter-grid{grid-template-columns:1fr;gap:14px}.opp-field .filter-box{position:fixed;min-width:0;width:auto;max-width:none;top:auto;bottom:calc(82px + env(safe-area-inset-bottom));left:14px!important;right:14px!important}.opp-field summary{font-size:12px}}
+
+/* Readable table typography across sales, opportunities and customer profiles. */
+table{font-size:14px;line-height:1.8}th,td{padding:14px 10px}th{font-size:13px;font-weight:800}.customer-link{font-size:inherit}
+@media(max-width:680px){table{font-size:13px}td{font-size:13px;line-height:1.85;padding:6px 0}td::before{font-size:12px}tr{padding:14px 12px}}
