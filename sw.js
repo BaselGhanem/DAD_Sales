@@ -1,5 +1,5 @@
-const CACHE = `dad-sales-shell-v1`;
-const SHELL = [`./index.html`,`./representative.html`,`./styles.css`,`./dashboard.css`,`./mobile.css`,`./pwa.js`,`./analytics.js`,`./dashboard.js`,`./chart-labels.js`,`./parser.worker.js`,`./app.js`,`./vendor/chart.umd.min.js`,`./vendor/xlsx.full.min.js`];
+const CACHE = `dad-sales-shell-v2`;
+const SHELL = [`./customer-profile.js`,`./customer-profile.css`,`./opportunities.js`,`./index.html`,`./representative.html`,`./styles.css`,`./dashboard.css`,`./mobile.css`,`./pwa.js`,`./analytics.js`,`./dashboard.js`,`./chart-labels.js`,`./parser.worker.js`,`./app.js`,`./vendor/chart.umd.min.js`,`./vendor/xlsx.full.min.js`];
 self.addEventListener(`install`, event => {event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener(`activate`,event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith(`dad-sales-shell-`)&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener(`fetch`,event=>{
