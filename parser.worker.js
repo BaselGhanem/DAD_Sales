@@ -1,6 +1,6 @@
 importScripts(`vendor/xlsx.full.min.js`);
 self.onmessage=async({data})=>{try{
- const response=await fetch(`data/Up.xlsx`,{cache:`no-store`});if(!response.ok)throw Error(`تعذر تحميل ملف المبيعات (${response.status})`);
+ const response=await fetch(`data/Up.xlsx?fresh=${Date.now()}`,{cache:`no-store`});if(!response.ok)throw Error(`تعذر تحميل ملف المبيعات (${response.status})`);
  const wb=XLSX.read(await response.arrayBuffer(),{type:`array`});if(!wb.Sheets.Data)throw Error(`ملف المبيعات يجب ان يحتوي صفحة Data`);
  const sheet=XLSX.utils.sheet_to_json(wb.Sheets.Data,{defval:``});if(!sheet.length)throw Error(`صفحة Data فارغة`);
  for(const key of [`MR`,`Cust No`,`Cust Name`,`Area Name`,`Transaction Date`,`Team`,`Item Name`,`Product Group`,`Value`,`Units`])if(!(key in sheet[0]))throw Error(`عمود مطلوب غير موجود: ${key}`);
