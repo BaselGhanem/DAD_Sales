@@ -37,3 +37,16 @@ Worker reconciled against the uploaded workbook and supplied report: 2026-11-08 
 Only credentials.csv controls login. Columns: Username, Medical Representative, PIN. Username is the stable unique account ID; Medical Representative must exactly match MR in data/Up.xlsx; PIN contains exactly four ASCII digits (preserve leading zeros). Teams is removed and is inferred from all Team values on the representative's workbook rows.
 
 Rename a representative in the CSV and replace the historical MR names in the workbook. Change the PIN when an employee leaves. A name/PIN change invalidates that account's existing sessions on the next refresh; open dashboards check for published workbook and credential changes every 30 seconds and on return. Existing sessions created before this update require one new sign-in. accounts.json is legacy and is no longer read by the application. Updating the workbook alone does not create or rename login accounts.
+
+## Supervisor accounts
+
+The supervisor role is active at supervisor.html. credentials.csv now has Role and Team columns:
+- Role=rep: Team stays blank; membership is inferred from the workbook by MR.
+- Role=supervisor: Team must exactly match one workbook Team.
+- The Medical Representative column holds the display name for either role.
+- Vacant accounts are distinct per team, with unique Username and PIN. Replace only the display name and PIN when the post is filled; retain Username, Role and Team.
+- Named supervisors: Azord / محمد الرمحي; Clavodar / قاسم سمور; Matador / مي الششتري. Eight other teams have Vacant accounts.
+- Default view is the whole team; representative filter and representative comparison chart apply to team-scoped rows.
+- Team is part of the supervisor session version, so changing assignment invalidates saved supervisor sessions.
+- Bonus is excluded from both supervisor and representative views.
+- Business Unit roles remain unconfigured.
