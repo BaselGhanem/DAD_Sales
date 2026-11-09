@@ -16,7 +16,7 @@
     const notice = document.createElement(`div`);
     notice.setAttribute(`role`, `status`);
     notice.dir = `rtl`;
-    notice.textContent = `تم تحديث ملف المبيعات، جاري تحميل النسخة الجديدة`;
+    notice.textContent = `تم تحديث بيانات الموقع، جاري تحميل النسخة الجديدة`;
     Object.assign(notice.style, {position:`fixed`,inset:`0`,zIndex:`1000`,display:`grid`,placeItems:`center`,padding:`24px`,background:`#f4f8f9`,color:`#099999`,font:`700 17px/1.8 Almarai,Arial,sans-serif`,textAlign:`center`});
     document.body.append(notice);
     const url = new URL(location.href);
@@ -28,10 +28,12 @@
     checking = true;
     lastCheck = Date.now();
     try {
-      const response = await fetch(`data/Up.xlsx?versionCheck=${Date.now()}`, {method:`HEAD`,cache:`no-store`,signal:AbortSignal.timeout(12000)});
-      if (!response.ok) return;
-      const next = fingerprint(response.headers);
-      if (!next) return;
+      const paths=[`data/Up.xlsx`,`credentials.csv`];
+      const responses=await Promise.all(paths.map(path=>fetch(`${path}?versionCheck=${Date.now()}`,{method:`HEAD`,cache:`no-store`,signal:AbortSignal.timeout(12000)})));
+      if(responses.some(response=>!response.ok))return;
+      const fingerprints=responses.map(response=>fingerprint(response.headers));
+      if(fingerprints.some(value=>!value))return;
+      const next=JSON.stringify(fingerprints);
       if (version !== null && next !== version) { update(); return; }
       version = next;
     } catch { /* Retry automatically after connectivity returns. */ }
