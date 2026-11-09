@@ -31,3 +31,9 @@ Replace data/Up.xlsx with the complete updated workbook using the same name, she
 ## Validation
 
 Worker reconciled against the uploaded workbook and supplied report: 2026-11-08 data, reference MR November net 1,917.94, units 359, active customers 7, movements 12. Unit checks cover returns, positive-net customer counts, filter intersections, month-end clamping and year boundaries. Login redirect tested in live browser without a session. Authenticated visual QA remains pending.
+
+## Authoritative credentials (updated)
+
+Only credentials.csv controls login. Columns: Username, Medical Representative, PIN. Username is the stable unique account ID; Medical Representative must exactly match MR in data/Up.xlsx; PIN contains exactly four ASCII digits (preserve leading zeros). Teams is removed and is inferred from all Team values on the representative's workbook rows.
+
+Rename a representative in the CSV and replace the historical MR names in the workbook. Change the PIN when an employee leaves. A name/PIN change invalidates that account's existing sessions on the next refresh; open dashboards check for published workbook and credential changes every 30 seconds and on return. Existing sessions created before this update require one new sign-in. accounts.json is legacy and is no longer read by the application. Updating the workbook alone does not create or rename login accounts.
