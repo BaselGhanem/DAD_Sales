@@ -25,9 +25,9 @@
   $(`login`).addEventListener(`submit`,async event=>{
     event.preventDefault();if(busy)return;busy=true;$(`submit`).disabled=true;$(`submit`).textContent=`جاري التحقق`;$(`message`).textContent=``;
     try{
-      const user=available().find(u=>u.id===$(`username`).value);const pin=normalizePIN($(`password`).value);
+      const chosen=$(`username`).value;config=await Credentials.load();const user=available().find(u=>u.id===chosen);const pin=normalizePIN($(`password`).value);
       if(!user || !/^\d{4}$/.test(pin) || await hash(`${user.id}:${pin}`)!==user.passwordHash){$(`message`).textContent=`اسم المستخدم او كلمة المرور غير صحيحة`;$(`password`).value=``;$(`password`).focus();return;}
-      const session={id:user.id,role:user.role,savedAt:Date.now(),expiresAt:Date.now()+($(`remember`).checked?30:1)*86400000};
+      const session={id:user.id,role:user.role,authVersion:user.authVersion,savedAt:Date.now(),expiresAt:Date.now()+($(`remember`).checked?30:1)*86400000};
       if(!storage.save(session,$(`remember`).checked)){$(`message`).textContent=`يرجى السماح بالتخزين في المتصفح للمتابعة`;return;}
       $(`password`).value=``;showSuccess(user);
     }catch{$(`message`).textContent=`تعذر تسجيل الدخول، يرجى المحاولة مجددا`}
@@ -46,10 +46,11 @@
     loader.hidden = true;
   }
   async function init(){
-    try{const response=await fetch(`accounts.json`,{cache:`no-store`});if(!response.ok)throw Error(`accounts`);config=await response.json();if(!Array.isArray(config.users))throw Error(`schema`);
-      const value=storage.get(SESSION_KEY);if(value){try{const session=JSON.parse(value);const user=config.users.find(u=>u.enabled&&u.id===session.id&&u.role===session.role);if(user&&Number.isFinite(session.expiresAt)&&session.expiresAt>Date.now()&&session.savedAt<=Date.now())showSuccess(user);else storage.clear()}catch{storage.clear()}}
+    try{config=await Credentials.load();
+      const value=storage.get(SESSION_KEY);if(value){try{const session=JSON.parse(value);const user=config.users.find(u=>u.enabled&&u.id===session.id&&u.role===session.role);if(Credentials.valid(user,session)&&Number.isFinite(session.expiresAt)&&session.expiresAt>Date.now()&&session.savedAt<=Date.now())showSuccess(user);else storage.clear()}catch{storage.clear()}}
     }catch{config=null;}
     finally{await finishLoading();}
   }
   init();
+  setInterval(async()=>{if(document.hidden||busy)return;try{const selected=$(`username`).value;config=await Credentials.load();if(role){populate();if(available().some(u=>u.id===selected))$(`username`).value=selected}}catch{}},30000);
 })();
