@@ -34,11 +34,22 @@
     finally{busy=false;$(`submit`).disabled=available().length===0;$(`submit`).textContent=`تسجيل الدخول`}
   });
   $(`logout`).addEventListener(`click`,()=>{storage.clear();view(`roles`);document.querySelector(`[data-role]`).focus()});
+  const loaderStarted = performance.now();
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+  async function finishLoading(){
+    await wait(Math.max(0, 900 - (performance.now() - loaderStarted)));
+    const loader = $(`loader`);
+    $(`app`).inert = false;
+    document.body.classList.add(`app-ready`);
+    loader.classList.add(`out`);
+    await wait(matchMedia(`(prefers-reduced-motion: reduce)`).matches ? 0 : 380);
+    loader.hidden = true;
+  }
   async function init(){
     try{const response=await fetch(`accounts.json`,{cache:`no-store`});if(!response.ok)throw Error(`accounts`);config=await response.json();if(!Array.isArray(config.users))throw Error(`schema`);
       const value=storage.get(SESSION_KEY);if(value){try{const session=JSON.parse(value);const user=config.users.find(u=>u.enabled&&u.id===session.id&&u.role===session.role);if(user&&Number.isFinite(session.expiresAt)&&session.expiresAt>Date.now()&&session.savedAt<=Date.now())showSuccess(user);else storage.clear()}catch{storage.clear()}}
     }catch{config=null;}
-    finally{$(`app`).inert=false;$(`loader`).hidden=true;}
+    finally{await finishLoading();}
   }
   init();
 })();
