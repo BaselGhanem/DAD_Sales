@@ -2,7 +2,12 @@
 const $=id=>document.getElementById(id),S=Sales,fmt=n=>new Intl.NumberFormat(`en-US`,{maximumFractionDigits:2}).format(n),dateLabel=d=>new Date(`${d}T00:00:00Z`).toLocaleDateString(`en-GB`,{timeZone:`UTC`});
 const dimensions={month:`الشهر`,team:`الفريق`,area:`المنطقة`,customer:`العميل`,group:`مجموعة المنتج`,item:`الصنف`};
 const filters=Object.fromEntries(Object.keys(dimensions).map(k=>[k,new Set()]));
-const loaderStart=performance.now();
+let dataReady=false;
+const reducedLoaderMotion=matchMedia(`(prefers-reduced-motion: reduce)`).matches;
+setTimeout(()=>{
+  $(`loading`).classList.add(`out`);
+  setTimeout(()=>{$(`loading`).hidden=true;$(`dataWait`).hidden=dataReady;},reducedLoaderMotion?0:350);
+},reducedLoaderMotion?3000:2650);
 let rows=[],allRows=[],latest,period=`month`,page=1,charts={},targetRows=[],session,user,sourceMin;
 const esc=s=>String(s??``).replace(/[&<>"']/g,c=>({[`&`]:`&amp;`,[`<`]:`&lt;`,[`>`]:`&gt;`,[`"`]:`&quot;`,[`'`]:`&#39;`})[c]);
 const getSession=()=>{for(const storage of [localStorage,sessionStorage]){try{const val=JSON.parse(storage.getItem(`dad_sales_session_v1`));if(val&&Number.isFinite(val.expiresAt)&&val.expiresAt>Date.now()&&val.savedAt<=Date.now())return val}catch{}}return null};
@@ -50,5 +55,5 @@ Chart.defaults.font.family=`Almarai, Arial, sans-serif`;Chart.defaults.color=`#7
 document.querySelectorAll(`[data-period]`).forEach(b=>b.onclick=()=>setPeriod(b.dataset.period));for(const id of [`from`,`to`])$(id).onchange=()=>{period=`custom`;document.querySelectorAll(`[data-period]`).forEach(b=>b.classList.toggle(`active`,b.dataset.period===period));render()};$(`clear`).onclick=()=>{for(const key of Object.keys(filters))filters[key].clear();render()};$(`productLevel`).onchange=()=>renderCharts(current);$(`prev`).onclick=()=>{page--;renderTable(current)};$(`next`).onclick=()=>{page++;renderTable(current)};document.addEventListener(`click`,e=>{for(const detail of document.querySelectorAll(`details[open]`))if(!detail.contains(e.target))detail.open=false});document.addEventListener(`keydown`,e=>{if(e.key===`Escape`)for(const detail of document.querySelectorAll(`details[open]`))detail.open=false});$(`logout`).onclick=()=>{localStorage.removeItem(`dad_sales_session_v1`);sessionStorage.removeItem(`dad_sales_session_v1`);location.replace(`index.html`)};
 window.SalesOpportunities.init({rows:loaded.opportunityRows,ownRows:rows,latest});window.CustomerProfiles.init({rows:loaded.opportunityRows,ownRows:rows,latest});$(`dashboard`).hidden=false;setPeriod(`month`);
 }catch(error){$(`error`).hidden=false;$(`errorText`).textContent=error.message||`يرجى اعادة المحاولة`}
-finally{const reduced=matchMedia(`(prefers-reduced-motion: reduce)`).matches;await new Promise(resolve=>setTimeout(resolve,Math.max(0,(reduced?0:650)-(performance.now()-loaderStart))));$(`loading`).classList.add(`out`);await new Promise(resolve=>setTimeout(resolve,reduced?0:350));$(`loading`).hidden=true}
+finally{dataReady=true;$(`dataWait`).hidden=true}
 })();
