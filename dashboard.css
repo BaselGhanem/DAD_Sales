@@ -41,3 +41,10 @@ table{font-size:14px;line-height:1.8}th,td{padding:14px 10px}th{font-size:13px;f
 #salesView>.toolbar .dates label{font-size:14px}
 #salesView>.toolbar .dates input{font-size:14px;padding:10px}
 @media(max-width:680px){#salesView>.toolbar .presets button{font-size:14px;padding:11px 12px}#salesView>.toolbar .dates label{font-size:12px}#salesView>.toolbar .dates input{font-size:13px}}
+
+/* Larger chart text and proportional plotting space across every dashboard. */
+.charts .section-head h2,.customer-profile .panel>h2{font-size:18px;font-weight:800;line-height:1.5}
+.charts .section-head span,.charts .section-head select{font-size:13px}
+.charts .chart-note{font-size:12px}
+.plot{height:320px}
+@media(max-width:680px){.charts .section-head h2,.customer-profile .panel>h2{font-size:16px}.charts .section-head span,.charts .section-head select{font-size:12px}.charts .plot,.customer-profile .plot{height:310px}.charts .chart-note{font-size:11px}}
