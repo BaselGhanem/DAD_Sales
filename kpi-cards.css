@@ -6,3 +6,5 @@
 .kpis article.premium-kpi>p,.kpis article.premium-kpi>small{font-size:12px;line-height:1.5}
 .kpis article.premium-kpi>#profileLast{font-size:25px!important;letter-spacing:0}
 @media(max-width:680px){.kpis article.premium-kpi>span{font-size:12px;line-height:1.4}.kpis article.premium-kpi>strong{font-size:clamp(25px,6.8vw,32px)!important;letter-spacing:-1px}.kpis article.premium-kpi:first-child>span,.kpis article.premium-kpi:first-child>strong{color:#fff}.kpis article.premium-kpi>p,.kpis article.premium-kpi>small{font-size:10px}.kpis article.premium-kpi>#profileLast{font-size:20px!important}}
+
+.sku-selection-note{display:block;font:500 13px/1.6 Segoe UI,Almarai,Arial,sans-serif;white-space:normal;letter-spacing:0;color:#70828e;margin-top:12px}.premium-chart-tooltip .sku-selection-note{font-size:12px;margin-top:4px}.kpis article:first-child .sku-selection-note{color:inherit}
