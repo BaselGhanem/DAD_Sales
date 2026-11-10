@@ -24,7 +24,7 @@
     location.replace(url.href);
   };
   async function check(force = false) {
-    if (checking || reloading || document.hidden || (!force && Date.now() - lastCheck < 120000)) return;
+    if (checking || reloading || document.hidden || (!force && Date.now() - lastCheck < 600000)) return;
     checking = true;
     lastCheck = Date.now();
     try {
@@ -40,7 +40,7 @@
     finally { checking = false; }
   }
   check(true);
-  setInterval(() => check(), 120000);
+  setInterval(() => check(), 600000);
   document.addEventListener(`visibilitychange`, () => { if (!document.hidden) check(); });
   window.addEventListener(`focus`, () => check());
   window.addEventListener(`online`, () => check());
