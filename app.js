@@ -9,11 +9,13 @@
   const view = id => { for(const key of [`roles`,`auth`,`success`]) $(key).hidden=key!==id; };
   const showSuccess = user => {if(user.role===`chronic`||user.role===`anti-infective`){window.location.replace(user.role===`chronic`?`business-unit-chronic.html`:`business-unit-anti-infective.html`);return;}if(user.role === `supervisor`){window.location.replace(`supervisor.html`);return;}if(user.role === `rep`){window.location.replace(`representative.html`);return;}view(`success`); $(`welcome`).textContent=`Welcome ${user.name}`; $(`welcome`).tabIndex=-1;$(`welcome`).focus();};
   const available = () => config?.users.filter(user=>user.enabled && user.role===role) || [];
+  const syncUsername = () => { $(`credentialUsername`).value = $(`username`).value; };
+  $(`username`).addEventListener(`change`, syncUsername);
   const populate = () => {
     const select=$(`username`);select.replaceChildren(new Option(`Select your name`,``));
     for(const user of available()) select.add(new Option(user.role===`supervisor`?`${user.name} — ${user.team}`:user.name,user.id));
     const enabled=available().length>0;
-    select.disabled=!enabled;$(`password`).disabled=!enabled;$(`submit`).disabled=!enabled;
+    syncUsername();select.disabled=!enabled;$(`password`).disabled=!enabled;$(`submit`).disabled=!enabled;
     $(`message`).textContent=!config?`Unable to load accounts. Refresh to try again.`:!enabled?`Accounts for this role are not available yet.`:``;
   };
   document.querySelectorAll(`[data-role]`).forEach(button=>button.addEventListener(`click`,()=>{
@@ -25,7 +27,7 @@
   $(`login`).addEventListener(`submit`,async event=>{
     event.preventDefault();if(busy)return;busy=true;$(`submit`).disabled=true;$(`submit`).textContent=`Signing in...`;$(`message`).textContent=``;
     try{
-      const chosen=$(`username`).value;config=await Credentials.load();const user=available().find(u=>u.id===chosen);const pin=normalizePIN($(`password`).value);
+      const chosen=$(`username`).value;syncUsername();config=await Credentials.load();const user=available().find(u=>u.id===chosen);const pin=normalizePIN($(`password`).value);
       if(!user || !/^\d{4}$/.test(pin) || await hash(`${user.id}:${pin}`)!==user.passwordHash){$(`message`).textContent=`Incorrect username or password.`;$(`password`).value=``;$(`password`).focus();return;}
       const session={id:user.id,role:user.role,authVersion:user.authVersion,savedAt:Date.now(),expiresAt:Date.now()+($(`remember`).checked?30:1)*86400000};
       if(!storage.save(session,$(`remember`).checked)){$(`message`).textContent=`Allow browser storage to continue.`;return;}
@@ -52,5 +54,5 @@
     finally{await finishLoading();}
   }
   init();
-  setInterval(async()=>{if(document.hidden||busy)return;try{const selected=$(`username`).value;config=await Credentials.load();if(role){populate();if(available().some(u=>u.id===selected))$(`username`).value=selected}}catch{}},120000);
+  setInterval(async()=>{if(document.hidden||busy)return;try{const selected=$(`username`).value;config=await Credentials.load();if(role){populate();if(available().some(u=>u.id===selected))$(`username`).value=selected;syncUsername()}}catch{}},120000);
 })();
