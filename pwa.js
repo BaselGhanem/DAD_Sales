@@ -15,7 +15,12 @@ button.onclick = async () => {
  dialog.showModal();
 };
 window.addEventListener(`appinstalled`,()=>{button.hidden=true;prompt=null});
-if(`serviceWorker` in navigator) window.addEventListener(`load`,()=>navigator.serviceWorker.register(`./sw.js`,{updateViaCache:`none`}).catch(()=>{}));
+if(`serviceWorker` in navigator){
+ const controlledAtStart=!!navigator.serviceWorker.controller;let refreshing=false;
+ navigator.serviceWorker.addEventListener(`controllerchange`,()=>{if(controlledAtStart&&!refreshing){refreshing=true;location.reload()}});
+ const register=()=>navigator.serviceWorker.register(`./sw.js`,{updateViaCache:`none`}).then(registration=>registration.update()).catch(()=>{});
+ if(document.readyState===`complete`)register();else window.addEventListener(`load`,register,{once:true});
+}
 document.querySelectorAll(`.mobile-nav [data-section]`).forEach(item=>item.onclick=()=>{
  document.getElementById(item.dataset.section)?.scrollIntoView({behavior:matchMedia(`(prefers-reduced-motion: reduce)`).matches?`auto`:`smooth`,block:`start`});
  document.querySelectorAll(`.mobile-nav button`).forEach(b=>b.classList.toggle(`active`,b===item));
