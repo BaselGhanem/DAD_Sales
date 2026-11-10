@@ -8,6 +8,7 @@
   const storage = {get(key){try{return localStorage.getItem(key)||sessionStorage.getItem(key)}catch{return null}},clear(){try{localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY)}catch{}},save(value,remember){try{this.clear();(remember?localStorage:sessionStorage).setItem(SESSION_KEY,JSON.stringify(value));return true}catch{return false}}};
   const view = id => { for(const key of [`roles`,`auth`,`success`]) $(key).hidden=key!==id; };
   const showSuccess = user => {if(user.role===`chronic`||user.role===`anti-infective`){window.location.replace(user.role===`chronic`?`business-unit-chronic.html`:`business-unit-anti-infective.html`);return;}if(user.role === `supervisor`){window.location.replace(`supervisor.html`);return;}if(user.role === `rep`){window.location.replace(`representative.html`);return;}view(`success`); $(`welcome`).textContent=`Welcome ${user.name}`; $(`welcome`).tabIndex=-1;$(`welcome`).focus();};
+  const passwordOnly = () => [`chronic`,`anti-infective`].includes(role);
   const available = () => config?.users.filter(user=>user.enabled && user.role===role) || [];
   const syncUsername = () => { $(`credentialUsername`).value = $(`username`).value; };
   $(`username`).addEventListener(`change`, syncUsername);
@@ -16,26 +17,28 @@
   const populate = () => {
     const select=$(`username`);select.replaceChildren(new Option(`Select your name`,``));
     for(const user of available()) select.add(new Option(user.role===`supervisor`?`${user.name} — ${user.team}`:user.name,user.id));
-    const enabled=available().length>0;
+    const unit=passwordOnly();const accounts=available();const enabled=unit?accounts.length===1:accounts.length>0;
+    select.hidden=unit;select.required=!unit;document.querySelector(`label[for="username"]`).hidden=unit;
+    if(unit&&enabled)select.value=accounts[0].id;
     syncUsername();select.disabled=!enabled;$(`password`).disabled=!enabled;$(`submit`).disabled=!enabled;
     $(`message`).textContent=!config?`Unable to load accounts. Refresh to try again.`:!enabled?`Accounts for this role are not available yet.`:``;
   };
   document.querySelectorAll(`[data-role]`).forEach(button=>button.addEventListener(`click`,()=>{
     trigger=button;role=button.dataset.role;$(`login`).reset();$(`password`).type=`password`;$(`toggle`).textContent=`Show`;$(`toggle`).setAttribute(`aria-pressed`,`false`);
-    $(`auth-title`).textContent=TITLES[role];populate();view(`auth`);$(`back`).focus();
+    $(`auth-title`).textContent=TITLES[role];populate();view(`auth`);if(passwordOnly()&&!$(`password`).disabled)$(`password`).focus();else $(`back`).focus();
   }));
   $(`back`).addEventListener(`click`,()=>{view(`roles`);$(`login`).reset();trigger?.focus()});
   $(`toggle`).addEventListener(`click`,()=>{const visible=$(`password`).type===`password`;$(`password`).type=visible?`text`:`password`;$(`toggle`).textContent=visible?`Hide`:`Show`;$(`toggle`).setAttribute(`aria-pressed`,`${visible}`);$(`toggle`).setAttribute(`aria-label`,visible?`Hide password`:`Show password`)});
   $(`login`).addEventListener(`submit`,async event=>{
     event.preventDefault();if(busy)return;busy=true;$(`submit`).disabled=true;$(`submit`).textContent=`Signing in...`;$(`message`).textContent=``;
     try{
-      const chosen=$(`username`).value;syncUsername();config=await Credentials.load();const user=available().find(u=>u.id===chosen);const pin=normalizePIN($(`password`).value);
-      if(!user || !/^\d{4}$/.test(pin) || await hash(`${user.id}:${pin}`)!==user.passwordHash){$(`message`).textContent=`Incorrect username or password.`;$(`password`).value=``;$(`password`).focus();return;}
+      const chosen=$(`username`).value;config=await Credentials.load();const accounts=available();const user=passwordOnly()?(accounts.length===1?accounts[0]:null):accounts.find(u=>u.id===chosen);if(passwordOnly()&&user)$(`username`).value=user.id;syncUsername();const pin=normalizePIN($(`password`).value);
+      if(!user || !/^\d{4}$/.test(pin) || await hash(`${user.id}:${pin}`)!==user.passwordHash){$(`message`).textContent=passwordOnly()?`Incorrect password.`:`Incorrect username or password.`;$(`password`).value=``;$(`password`).focus();return;}
       const session={id:user.id,role:user.role,authVersion:user.authVersion,savedAt:Date.now(),expiresAt:Date.now()+($(`remember`).checked?30:1)*86400000};
       if(!storage.save(session,$(`remember`).checked)){$(`message`).textContent=`Allow browser storage to continue.`;return;}
       $(`password`).value=``;showSuccess(user);
     }catch{$(`message`).textContent=`Unable to sign in. Please try again.`}
-    finally{busy=false;$(`submit`).disabled=available().length===0;$(`submit`).textContent=`Sign in`}
+    finally{busy=false;$(`submit`).disabled=passwordOnly()?available().length!==1:available().length===0;$(`submit`).textContent=`Sign in`}
   });
   $(`logout`).addEventListener(`click`,()=>{storage.clear();view(`roles`);document.querySelector(`[data-role]`).focus()});
   const loaderStarted = performance.now();
