@@ -60,3 +60,14 @@ Two active roles and pages:
 Both accounts are in credentials.csv with distinct four-digit PINs. Team contains pipe-separated exact workbook Team names for BU roles, for example Cardio 1 | Cardio 2 | Cardio 3 | Cardio 4. Keep Role and Username stable when changing the display name/PIN. Team assignments are included in session validation.
 
 Business Unit pages show only their assigned teams for sales records, representative comparison, team comparison and targets. Team, supervisor, representative, date, area, customer, group and item filters intersect. Supervisors are resolved from the same credentials.csv file. Bonus is excluded. Existing opportunity and profile views preserve aggregate-only visibility for products outside the relevant portfolio.
+
+## Country Manager
+
+- Username and Role: country-manager. Password-only login uses credentials.csv; Team stays blank.
+- country-manager.html reads all workbook sales rows, including future teams. Bonus excluded.
+- Cascading Business unit, Supervisor, Team and Medical representative filters; existing period, area, customer, group and item filters remain available.
+- BU membership comes from BU accounts in credentials.csv. Unmapped teams stay visible as Unassigned.
+- Business unit, team and representative comparison charts support the same filters, labels and premium tooltips.
+- Opportunities and follow-up priorities include independent BU/supervisor/team/representative filters.
+- Targets stay hidden without matching valid target data; area and customer filters remain excluded.
+- Auto refresh checks run every ten minutes.
