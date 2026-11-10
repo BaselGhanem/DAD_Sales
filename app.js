@@ -11,6 +11,8 @@
   const available = () => config?.users.filter(user=>user.enabled && user.role===role) || [];
   const syncUsername = () => { $(`credentialUsername`).value = $(`username`).value; };
   $(`username`).addEventListener(`change`, syncUsername);
+  for(const event of [`input`,`change`])$(`credentialUsername`).addEventListener(event,()=>{const value=$(`credentialUsername`).value;if([...$(`username`).options].some(option=>option.value===value))$(`username`).value=value;});
+
   const populate = () => {
     const select=$(`username`);select.replaceChildren(new Option(`Select your name`,``));
     for(const user of available()) select.add(new Option(user.role===`supervisor`?`${user.name} — ${user.team}`:user.name,user.id));
