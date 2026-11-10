@@ -1,8 +1,13 @@
 /* Shared value labels for every Chart.js chart, including animated updates. */
 (() => {
-  const number = new Intl.NumberFormat(`en-US`, {maximumFractionDigits: 2});
+  const number = new Intl.NumberFormat(`en-US`, {maximumFractionDigits:0});
   Chart.register({
     id: `salesValueLabels`,
+    beforeUpdate(chart) {
+      for (const axis of Object.values(chart.scales)) {
+        if (axis.type === `linear` || axis.type === `logarithmic`) axis.options.ticks.callback = value => number.format(Number(value));
+      }
+    },
     afterDatasetsDraw(chart) {
       const {ctx, width, height} = chart;
       const horizontal = chart.options.indexAxis === `y`;

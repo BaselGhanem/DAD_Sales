@@ -1,5 +1,5 @@
 (async()=>{
-const $=id=>document.getElementById(id),S=Sales,fmt=n=>new Intl.NumberFormat(`en-US`,{maximumFractionDigits:2}).format(n),dateLabel=d=>new Date(`${d}T00:00:00Z`).toLocaleDateString(`en-GB`,{timeZone:`UTC`});
+const $=id=>document.getElementById(id),S=Sales,fmt=n=>new Intl.NumberFormat(`en-US`,{maximumFractionDigits:0}).format(n),dateLabel=d=>new Date(`${d}T00:00:00Z`).toLocaleDateString(`en-GB`,{timeZone:`UTC`});
 const pageRole=document.body.dataset.pageRole||`rep`;const supervisor=pageRole===`supervisor`,businessUnit=[`chronic`,`anti-infective`].includes(pageRole),leadership=supervisor||businessUnit;
 const dimensions={...(leadership?{rep:`Medical representative`}:{}),...(businessUnit?{supervisor:`Supervisor`}:{}),month:`Month`,team:`Team`,area:`Area`,customer:`Customer`,group:`Product group`,item:`Item`};
 const filters=Object.fromEntries(Object.keys(dimensions).map(k=>[k,new Set()]));

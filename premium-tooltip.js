@@ -1,5 +1,5 @@
 (() => {
- const roots=new Map(),format=n=>new Intl.NumberFormat(`en-US`,{maximumFractionDigits:2}).format(n),escape=s=>String(s??``).replace(/[&<>"']/g,c=>({[`&`]:`&amp;`,[`<`]:`&lt;`,[`>`]:`&gt;`,[`"`]:`&quot;`,[`'`]:`&#39;`})[c]);
+ const roots=new Map(),format=n=>new Intl.NumberFormat(`en-US`,{maximumFractionDigits:0}).format(n),escape=s=>String(s??``).replace(/[&<>"']/g,c=>({[`&`]:`&amp;`,[`<`]:`&lt;`,[`>`]:`&gt;`,[`"`]:`&quot;`,[`'`]:`&#39;`})[c]);
  const hide=()=>{for(const box of roots.values()){box.hidden=true;box.setAttribute(`aria-hidden`,`true`)}};
  function summarize(rows,total){const m=Sales.metrics(rows);return {...m,transactions:rows.length,share:total>0?m.net/total*100:null}}
  function bind(chart,{rows,key,keys,titles,period}){const groups=new Map();for(const r of rows){const value=typeof key===`function`?key(r):r[key];if(!groups.has(value))groups.set(value,[]);groups.get(value).push(r)}const total=Sales.sum(rows);chart.$premiumTooltip={titles:titles||chart.data.labels,period,points:keys.map(value=>summarize(groups.get(value)||[],total))}}

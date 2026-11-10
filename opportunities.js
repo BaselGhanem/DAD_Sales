@@ -1,5 +1,5 @@
 (() => {
-const $=id=>document.getElementById(id),S=Sales,n=n=>new Intl.NumberFormat(`en-US`,{maximumFractionDigits:2}).format(n),escape=s=>String(s??``).replace(/[&<>"']/g,c=>({[`&`]:`&amp;`,[`<`]:`&lt;`,[`>`]:`&gt;`,[`"`]:`&quot;`,[`'`]:`&#39;`})[c]);
+const $=id=>document.getElementById(id),S=Sales,n=n=>new Intl.NumberFormat(`en-US`,{maximumFractionDigits:0}).format(n),escape=s=>String(s??``).replace(/[&<>"']/g,c=>({[`&`]:`&amp;`,[`<`]:`&lt;`,[`>`]:`&gt;`,[`"`]:`&quot;`,[`'`]:`&#39;`})[c]);
 function territoryScope(ownRows,teams,reps){const scoped=ownRows.filter(r=>(!teams.size||teams.has(r.team))&&(!reps.size||reps.has(r.rep)));return {ownRows:scoped,items:[...new Set(scoped.map(r=>r.item))],areas:new Set(scoped.map(r=>r.area))};}
 function compute(rows,owned,selected,areas,from,to){
  const wanted=new Set(selected.length?selected:owned),customers=new Map();

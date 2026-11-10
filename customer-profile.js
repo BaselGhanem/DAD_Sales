@@ -1,5 +1,5 @@
 (() => {
-const $=id=>document.getElementById(id),S=Sales,fmt=n=>new Intl.NumberFormat(`en-US`,{maximumFractionDigits:2}).format(n),esc=s=>String(s??``).replace(/[&<>"']/g,c=>({[`&`]:`&amp;`,[`<`]:`&lt;`,[`>`]:`&gt;`,[`"`]:`&quot;`,[`'`]:`&#39;`})[c]);
+const $=id=>document.getElementById(id),S=Sales,fmt=n=>new Intl.NumberFormat(`en-US`,{maximumFractionDigits:0}).format(n),esc=s=>String(s??``).replace(/[&<>"']/g,c=>({[`&`]:`&amp;`,[`<`]:`&lt;`,[`>`]:`&gt;`,[`"`]:`&quot;`,[`'`]:`&#39;`})[c]);
 function calculate(company,owned,customer,from,to){
  const portfolio=new Set(owned),client=company.filter(r=>r.customer===customer&&r.date<=to),inside=client.filter(r=>r.date>=from),own=inside.filter(r=>portfolio.has(r.item)),otherValue=S.sum(inside.filter(r=>!portfolio.has(r.item))),previous=client.filter(r=>r.date<from&&portfolio.has(r.item));
  const previousUnits=new Map(S.aggregate(previous,`item`,`units`)),currentUnits=new Map(S.aggregate(own,`item`,`units`)),values=new Map(S.aggregate(own,`item`));
