@@ -20,5 +20,5 @@
   }
   pending.clear();
  }
- window.KpiCounter={set(id,value){const element=document.getElementById(id);if(!element||!Number.isFinite(value))return;pending.set(element,value);element.textContent=format(value,Number.isInteger(value)?0:2);if(!scheduled){scheduled=true;queueMicrotask(flush)}}};
+ window.KpiCounter={text(id,message){const element=document.getElementById(id);if(!element)return;pending.delete(element);const previous=state.get(element);if(previous)cancelAnimationFrame(previous.frame);state.set(element,{value:0,frame:0});element.textContent=``;const note=document.createElement(`span`);note.className=`sku-selection-note`;note.textContent=message;element.append(note);},set(id,value){const element=document.getElementById(id);if(!element||!Number.isFinite(value))return;pending.set(element,value);element.textContent=format(value,Number.isInteger(value)?0:2);if(!scheduled){scheduled=true;queueMicrotask(flush)}}};
 })();
