@@ -12,7 +12,7 @@
         const meta = chart.getDatasetMeta(datasetIndex);
         const dense = !horizontal && dataset.data.length > 12;
         const mobile = width < 500;
-        ctx.font = `700 ${dense ? 12 : mobile ? 13 : 14}px Almarai, Arial, sans-serif`;
+        ctx.font = `700 ${dense ? 12 : mobile ? 13 : 14}px Segoe UI, Almarai, Arial, sans-serif`;
         ctx.fillStyle = `#123b55`;
         ctx.strokeStyle = `rgba(255,255,255,0.96)`;
         ctx.lineWidth = 3;

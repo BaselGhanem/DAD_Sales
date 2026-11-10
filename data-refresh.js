@@ -15,9 +15,9 @@
     reloading = true;
     const notice = document.createElement(`div`);
     notice.setAttribute(`role`, `status`);
-    notice.dir = `rtl`;
-    notice.textContent = `تم تحديث بيانات الموقع، جاري تحميل النسخة الجديدة`;
-    Object.assign(notice.style, {position:`fixed`,inset:`0`,zIndex:`1000`,display:`grid`,placeItems:`center`,padding:`24px`,background:`#f4f8f9`,color:`#099999`,font:`700 17px/1.8 Almarai,Arial,sans-serif`,textAlign:`center`});
+    notice.dir = `ltr`;
+    notice.textContent = `Updated data is available. Loading the latest version...`;
+    Object.assign(notice.style, {position:`fixed`,inset:`0`,zIndex:`1000`,display:`grid`,placeItems:`center`,padding:`24px`,background:`#f4f8f9`,color:`#099999`,font:`700 17px/1.8 Segoe UI,Almarai,Arial,sans-serif`,textAlign:`center`});
     document.body.append(notice);
     const url = new URL(location.href);
     url.searchParams.set(`salesUpdate`, `${Date.now()}`);

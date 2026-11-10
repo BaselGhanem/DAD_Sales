@@ -1,7 +1,7 @@
 
 .kpis article.premium-kpi{overflow:hidden;box-shadow:0 6px 22px #123b5505,inset 0 1px 0 #ffffff;border-color:#dce8eb}
 .kpis article.premium-kpi>span{font-size:15px;font-weight:700;line-height:1.35;color:#607d8b}
-.kpis article.premium-kpi>strong{font-family:Almarai,Arial,sans-serif;font-size:44px!important;font-weight:800;line-height:1.12;letter-spacing:-1.4px;font-variant-numeric:tabular-nums;margin:10px 0;color:#123b55;white-space:nowrap}
+.kpis article.premium-kpi>strong{font-family:Segoe UI,Almarai,Arial,sans-serif;font-size:44px!important;font-weight:800;line-height:1.12;letter-spacing:-1.4px;font-variant-numeric:tabular-nums;margin:10px 0;color:#123b55;white-space:nowrap}
 .kpis article.premium-kpi:first-child>strong{color:#099999}
 .kpis article.premium-kpi>p,.kpis article.premium-kpi>small{font-size:12px;line-height:1.5}
 .kpis article.premium-kpi>#profileLast{font-size:25px!important;letter-spacing:0}
