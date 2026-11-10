@@ -49,4 +49,14 @@ The supervisor role is active at supervisor.html. credentials.csv now has Role a
 - Default view is the whole team; representative filter and representative comparison chart apply to team-scoped rows.
 - Team is part of the supervisor session version, so changing assignment invalidates saved supervisor sessions.
 - Bonus is excluded from both supervisor and representative views.
-- Business Unit roles remain unconfigured.
+- Business Unit roles are configured as documented below.
+
+## Business Unit accounts
+
+Two active roles and pages:
+- chronic → business-unit-chronic.html: Cardio 1, Cardio 2, Cardio 3, Cardio 4
+- anti-infective → business-unit-anti-infective.html: Azord, Clavodar, Hairgrow, Matador, Mixif, Non-Promoted, URO
+
+Both accounts are in credentials.csv with distinct four-digit PINs. Team contains pipe-separated exact workbook Team names for BU roles, for example Cardio 1 | Cardio 2 | Cardio 3 | Cardio 4. Keep Role and Username stable when changing the display name/PIN. Team assignments are included in session validation.
+
+Business Unit pages show only their assigned teams for sales records, representative comparison, team comparison and targets. Team, supervisor, representative, date, area, customer, group and item filters intersect. Supervisors are resolved from the same credentials.csv file. Bonus is excluded. Existing opportunity and profile views preserve aggregate-only visibility for products outside the relevant portfolio.

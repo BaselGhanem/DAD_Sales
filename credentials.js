@@ -15,8 +15,8 @@
   const response=await fetch(`credentials.csv?fresh=${Date.now()}`,{cache:`no-store`});if(!response.ok)throw Error(`credentials`);
   const records=parse(await response.text()),ids=new Set(),names=new Set();const users=[];
   for(const row of records){const id=row.Username,name=row[`Medical Representative`],pin=row.PIN,role=row.Role||`rep`,team=row.Team||``;const identity=`${role}:${team}:${name}`;
-   if(!id||!name||!/^\d{4}$/.test(pin)||ids.has(id)||names.has(identity)||![`rep`,`supervisor`].includes(role)||(role===`supervisor`&&!team))throw Error(`Invalid or duplicate credential record`);
-   ids.add(id);names.add(identity);users.push({id,name,role,team,enabled:true,passwordHash:await hash(`${id}:${pin}`),authVersion:await hash(role===`rep`?`${id}:${name}:${pin}`:`${id}:${name}:${pin}:${role}:${team}`)});
+   if(!id||!name||!/^\d{4}$/.test(pin)||ids.has(id)||names.has(identity)||![`rep`,`supervisor`,`chronic`,`anti-infective`].includes(role)||(role!==`rep`&&!team)||(role===`supervisor`&&team.includes(`|`)))throw Error(`Invalid or duplicate credential record`);
+   ids.add(id);names.add(identity);users.push({id,name,role,team,teams:role===`rep`?[]:team.split(`|`).map(value=>value.trim()).filter(Boolean),enabled:true,passwordHash:await hash(`${id}:${pin}`),authVersion:await hash(role===`rep`?`${id}:${name}:${pin}`:`${id}:${name}:${pin}:${role}:${team}`)});
   }
   return {users};
  }

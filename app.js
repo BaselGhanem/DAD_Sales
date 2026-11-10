@@ -7,7 +7,7 @@
   const normalizePIN = value => value.replace(/[\u0660-\u0669]/g,c=>`${c.charCodeAt(0)-1632}`).replace(/[\u06f0-\u06f9]/g,c=>`${c.charCodeAt(0)-1776}`);
   const storage = {get(key){try{return localStorage.getItem(key)||sessionStorage.getItem(key)}catch{return null}},clear(){try{localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY)}catch{}},save(value,remember){try{this.clear();(remember?localStorage:sessionStorage).setItem(SESSION_KEY,JSON.stringify(value));return true}catch{return false}}};
   const view = id => { for(const key of [`roles`,`auth`,`success`]) $(key).hidden=key!==id; };
-  const showSuccess = user => {if(user.role === `supervisor`){window.location.replace(`supervisor.html`);return;}if(user.role === `rep`){window.location.replace(`representative.html`);return;}view(`success`); $(`welcome`).textContent=`Welcome ${user.name}`; $(`welcome`).tabIndex=-1;$(`welcome`).focus();};
+  const showSuccess = user => {if(user.role===`chronic`||user.role===`anti-infective`){window.location.replace(user.role===`chronic`?`business-unit-chronic.html`:`business-unit-anti-infective.html`);return;}if(user.role === `supervisor`){window.location.replace(`supervisor.html`);return;}if(user.role === `rep`){window.location.replace(`representative.html`);return;}view(`success`); $(`welcome`).textContent=`Welcome ${user.name}`; $(`welcome`).tabIndex=-1;$(`welcome`).focus();};
   const available = () => config?.users.filter(user=>user.enabled && user.role===role) || [];
   const populate = () => {
     const select=$(`username`);select.replaceChildren(new Option(`Select your name`,``));
