@@ -1,24 +1,14 @@
 (() => {
   const panel = document.querySelector(`.entry-motion`);
   const canvas = document.getElementById(`entry-motion-chart`);
-  const output = document.getElementById(`entry-motion-value`);
-  const toggle = document.getElementById(`entry-motion-toggle`);
   const context = canvas.getContext(`2d`);
   if (!context) return;
 
   const plot = canvas.parentElement;
-  const reducedMotion = matchMedia(`(prefers-reduced-motion: reduce)`);
-  const format = new Intl.NumberFormat(`en-US`);
   const series = [
     {values: [22, 34, 27, 42, 31, 49, 44, 63, 54, 73, 65, 81], stroke: `#7cf5d7`, fill: `#64e9c564`},
     {values: [15, 22, 17, 30, 22, 33, 27, 38, 32, 48, 41, 53], stroke: `#80bddb`, fill: `#64a7d04d`}
   ];
-  let current = 48260;
-  let interval = 0;
-  let frame = 0;
-  let paused = reducedMotion.matches;
-  let onScreen = false;
-
   function draw() {
     const width = plot.clientWidth;
     const height = plot.clientHeight;
@@ -68,63 +58,6 @@
     panel.dataset.ready = ``;
   }
 
-  function tick() {
-    const start = current;
-    const end = 42000 + Math.floor(Math.random() * 19000);
-    const nextSeries = series.map(({values}) => {
-      const next = values.at(-1) + (Math.random() - .46) * 36;
-      return [...values.slice(1), Math.max(17, Math.min(90, next))];
-    });
-    const previousSeries = series.map(({values}) => [...values]);
-    const started = performance.now();
-    let lastDraw = -Infinity;
-    function count(now) {
-      const progress = Math.min(1, (now - started) / 520);
-      if (progress === 1 || now - lastDraw >= 32) {
-        const eased = 1 - (1 - progress) ** 3;
-        current = Math.round(start + (end - start) * eased);
-        output.textContent = format.format(current);
-        for (const [index, {values}] of series.entries()) {
-          for (let i = 0; i < values.length; i++) {
-            const previous = previousSeries[index][i];
-            values[i] = previous + (nextSeries[index][i] - previous) * eased;
-          }
-        }
-        draw();
-        lastDraw = now;
-      }
-      frame = progress < 1 ? requestAnimationFrame(count) : 0;
-    }
-    frame = requestAnimationFrame(count);
-  }
-
-  function sync() {
-    const running = onScreen && !document.hidden && !paused;
-    panel.toggleAttribute(`data-running`, running);
-    toggle.textContent = paused ? `Play animation` : `Pause animation`;
-    if (running && !interval) interval = setInterval(tick, 3000);
-    if (!running) {
-      clearInterval(interval);
-      cancelAnimationFrame(frame);
-      interval = frame = 0;
-    }
-  }
-
   new ResizeObserver(draw).observe(plot);
-  new IntersectionObserver(([entry]) => {
-    onScreen = entry.isIntersecting;
-    sync();
-  }).observe(panel);
-  reducedMotion.addEventListener(`change`, event => {
-    paused = event.matches;
-    sync();
-  });
-  document.addEventListener(`visibilitychange`, sync);
-  toggle.addEventListener(`click`, () => {
-    paused = !paused;
-    sync();
-  });
-  toggle.hidden = false;
   draw();
-  sync();
 })();
