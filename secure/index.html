@@ -9,9 +9,87 @@
 :root{color-scheme:light;--ink:#163446;--muted:#526c77;--line:#d6e6e7;--teal:#087575;--tint:#eaf7f5;font:16px/1.6 Almarai,"Segoe UI",Tahoma,sans-serif}
 *{box-sizing:border-box}body{margin:0;background:#f3f8f8;color:var(--ink)}
 main{width:min(1120px,calc(100% - 28px));margin:clamp(14px,5vw,48px) auto}
-header{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:clamp(18px,4vw,32px);background:#123847;color:#fff;border-radius:22px}
-h1{margin:0;font-size:clamp(28px,5vw,42px);line-height:1.1}header p{margin:7px 0 0;color:#d1edeb;font-size:14px}
-a{color:var(--teal);text-underline-offset:4px}header a{color:#e0fbf7;font-size:14px}
+.secure-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(14px, 5vw, 64px);
+  min-height: 190px;
+  overflow: hidden;
+  padding: clamp(24px, 5vw, 54px);
+  border: 1px solid #e1e9e9;
+  border-radius: clamp(21px, 3vw, 32px);
+  background: radial-gradient(ellipse at 8% 110%, #d3efec 0, transparent 57%),
+              linear-gradient(150deg, #fff 20%, #f3f9f9);
+  box-shadow: 0 12px 36px #1634460a;
+}
+.secure-hero h1 {
+  direction: ltr;
+  text-align: right;
+  margin: 0;
+  color: #172329;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: clamp(42px, 7vw, 76px);
+  font-weight: 700;
+  line-height: .98;
+  letter-spacing: -.065em;
+}
+.secure-hero p {
+  margin: 12px 0 0;
+  color: #52666b;
+  font-size: clamp(13px, 1.6vw, 17px);
+}
+.secure-hero-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(64px, 11vw, 116px);
+  aspect-ratio: 1;
+  border: 1px solid #fff;
+  border-radius: 27%;
+  background: linear-gradient(145deg, #ffffffda, #d9efec);
+  box-shadow: inset 0 1px 2px #fff, 0 14px 36px #28766d23;
+}
+.secure-hero-art::before {
+  position: absolute;
+  z-index: -1;
+  inset: -38%;
+  border: 1px solid #a4d4ce66;
+  border-radius: 50%;
+  box-shadow: 0 0 0 24px #a4d4ce22, 0 0 0 48px #a4d4ce16;
+  content: "";
+}
+.secure-lock {
+  position: relative;
+  width: 40%;
+  height: 34%;
+  margin-top: 12%;
+  border-radius: 22%;
+  background: linear-gradient(155deg, #099999, #075f61);
+  box-shadow: 0 6px 12px #08757531;
+}
+.secure-lock::before {
+  position: absolute;
+  inset: auto 20% 87%;
+  height: 70%;
+  border: clamp(3px, .55vw, 6px) solid #087575;
+  border-bottom: 0;
+  border-radius: 45% 45% 0 0;
+  content: "";
+}
+.secure-lock::after {
+  position: absolute;
+  inset: 36% 45% 30%;
+  border-radius: 99px;
+  background: #e8fffb;
+  content: "";
+}
+@media (max-width: 480px) {
+  .secure-hero { min-height: 132px; }
+  .secure-hero p { margin-top: 8px; }
+}
 .tools,.person{background:white;border:1px solid var(--line);border-radius:16px}
 .tools{margin:14px 0;padding:16px;display:flex;align-items:center;flex-wrap:wrap;gap:10px}
 button,input{font:inherit}button{cursor:pointer;border:1px solid #cce4e2;border-radius:9px;background:var(--tint);color:var(--teal);font-size:13px;font-weight:700;padding:7px 10px;min-height:40px;white-space:nowrap}
@@ -43,9 +121,9 @@ h2{line-height:1.4;margin:0;overflow-wrap:anywhere}
 </head>
 <body>
 <main>
-  <header>
-    <div><h1 dir="ltr">Secure</h1><p>رسائل تفعيل برنامج المبيعات</p></div>
-    <a href="https://github.com/BaselGhanem/DAD_Sales/blob/main/credentials.csv" target="_blank" rel="noopener noreferrer" dir="ltr">credentials.csv</a>
+  <header class="secure-hero">
+    <div><h1 lang="en">Secure</h1><p>رسائل تفعيل برنامج المبيعات</p></div>
+    <div class="secure-hero-art" aria-hidden="true"><span class="secure-lock"></span></div>
   </header>
   <section class="tools" aria-label="تحميل وبحث">
     <button id="refresh" type="button">تحديث البيانات</button>
