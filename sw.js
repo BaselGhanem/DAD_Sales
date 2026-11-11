@@ -1,5 +1,5 @@
-const CACHE = `dad-sales-shell-v14-interface`;
-const SHELL = [`./interface.css`,`./country-manager.html`,`./premium-tooltip.js`,`./premium-tooltip.css`,`./business-unit-chronic.html`,`./business-unit-anti-infective.html`,`./kpi-counter.js`,`./kpi-cards.css`,`./selection.css`,`./supervisor.html`,`./credentials.js`,`./data-refresh.js`,`./customer-profile.js`,`./customer-profile.css`,`./opportunities.js`,`./index.html`,`./representative.html`,`./styles.css`,`./dashboard.css`,`./mobile.css`,`./pwa.js`,`./analytics.js`,`./dashboard.js`,`./chart-labels.js`,`./parser.worker.js`,`./app.js`,`./vendor/chart.umd.min.js`,`./vendor/xlsx.full.min.js`,`./assets/country-manager-symbolic.webp`];
+const CACHE = `dad-sales-shell-v15-portal`;
+const SHELL = [`./portal-entry.css`,`./interface.css`,`./country-manager.html`,`./premium-tooltip.js`,`./premium-tooltip.css`,`./business-unit-chronic.html`,`./business-unit-anti-infective.html`,`./kpi-counter.js`,`./kpi-cards.css`,`./selection.css`,`./supervisor.html`,`./credentials.js`,`./data-refresh.js`,`./customer-profile.js`,`./customer-profile.css`,`./opportunities.js`,`./index.html`,`./representative.html`,`./styles.css`,`./dashboard.css`,`./mobile.css`,`./pwa.js`,`./analytics.js`,`./dashboard.js`,`./chart-labels.js`,`./parser.worker.js`,`./app.js`,`./vendor/chart.umd.min.js`,`./vendor/xlsx.full.min.js`,`./assets/country-manager-symbolic.webp`];
 const vendors = [`vendor/chart.umd.min.js`, `vendor/xlsx.full.min.js`];
 
 self.addEventListener(`install`, event => event.waitUntil(self.skipWaiting()));
