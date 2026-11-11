@@ -1,0 +1,23 @@
+.jmap-panel{grid-column:1/-1;min-width:0}
+.jmap-panel .section-head{flex-wrap:wrap;gap:12px;margin-bottom:14px}
+.jmap-panel .section-head p{margin:2px 0 0;color:#526a74;font-size:13px}
+.jmap-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.jmap-actions button,.jmap-actions select{background:#fff;border:1px solid #cedfdf;border-radius:10px;min-height:42px;padding:7px 12px}
+.jmap-actions select{max-width:100%;color:#113d49}
+.jmap-actions button[aria-pressed=true]{background:#dff3ef;color:#075e62}
+.jmap-stage{position:relative;border:1px solid #cedfdf;border-radius:18px;overflow:hidden;background:radial-gradient(ellipse at 40% 30%,#f6efdf,#d4e4df)}
+.jmap-map{height:clamp(390px,65vh,680px);width:100%}
+.jmap-status{position:absolute;inset:50% 10% auto;transform:translateY(-50%);text-align:center;color:#144a50;font-weight:650;pointer-events:none}
+.jmap-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px 16px;margin:10px 0 13px;color:#526a74;font-size:12px}
+.jmap-lists{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:12px}
+.jmap-lists details{min-width:0;border:1px solid #d8e7e6;border-radius:14px;background:#f9fcfc;padding:10px 12px}
+.jmap-lists summary{cursor:pointer;font-weight:700;color:#123b55}
+.jmap-lists summary span{color:#426770;font-size:12px;font-weight:500}
+.jmap-list{display:grid;align-content:start;gap:4px;max-height:240px;overflow:auto;margin-top:8px}
+.jmap-row{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:start;min-height:42px;padding:6px 9px;width:100%;border-color:#e0ebea;background:#fff}
+.jmap-row strong{font-variant-numeric:tabular-nums;white-space:nowrap;color:#0c6266}
+.jmap-row small,.jmap-popup small{display:block;color:#526a74}
+.jmap-popup{display:grid;gap:5px;padding:7px;color:#123b55;font:14px/1.45 Segoe UI,Arial,sans-serif}
+.jmap-popup button{margin-top:3px;background:#087f83;color:white;border:0}
+.jmap-stage .maplibregl-popup-content{border-radius:14px}
+@media(max-width:600px){.jmap-map{height:430px}.jmap-actions{width:100%}.jmap-actions select{flex:1 1 100%}.jmap-panel .section-head{align-items:flex-start}}
