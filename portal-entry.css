@@ -81,7 +81,7 @@
 
 .entry-copy h1 {
   margin: 0;
-  font-size: clamp(60px, 8.2vw, 116px);
+  font-size: clamp(58px, 6.5vw, 94px);
   line-height: .94;
   letter-spacing: -.075em;
   font-weight: 800;
@@ -97,30 +97,93 @@
   line-height: 1.55;
 }
 
-.entry-art {
-  position: absolute;
-  z-index: 0;
-  inset: auto -16% -35% 8%;
-  height: 78%;
-  transform: rotate(-22deg) skewX(-8deg);
+.entry-motion {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  margin-top: 28px;
+  border: 1px solid #a6e5df38;
+  border-radius: 18px;
+  background: #082b3b91;
+  box-shadow: 0 14px 35px #061b2b40;
+  overflow: hidden;
 }
 
-.entry-orbit {
-  position: absolute;
-  inset: 0;
-  border: 1px solid #a3fff086;
-  border-radius: 50%;
-  background: linear-gradient(155deg, #75f3db30, #1c827410 52%, #93f2dc12);
-  box-shadow: inset 0 8px 22px #a4f9e937, 0 0 55px #14a9952b;
+.entry-motion-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 0;
 }
 
-.entry-orbit:nth-child(2) { inset: 9%; }
-.entry-orbit:nth-child(3) { inset: 19%; }
-.entry-light {
+.entry-motion-label {
+  display: block;
+  color: #b9dfdf;
+  font-size: 12px;
+}
+
+.entry-motion-value {
+  display: block;
+  color: #e1fff8;
+  font-size: clamp(24px, 3vw, 40px);
+  font-weight: 800;
+  line-height: 1.18;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.04em;
+}
+
+#entry-motion-toggle {
+  min-height: 44px;
+  padding: 6px 11px;
+  border: 1px solid #a6e5df42;
+  border-radius: 100px;
+  background: #102f3f;
+  color: #d5f3ef;
+  font-size: 12px;
+}
+
+#entry-motion-toggle:focus-visible { outline-color: #c9fff4; }
+
+.entry-motion-plot {
+  position: relative;
+  height: clamp(75px, 9vw, 115px);
+  margin-top: 4px;
+}
+
+.entry-motion-plot canvas { display: block; width: 100%; height: 100%; }
+
+.entry-motion-dot {
   position: absolute;
-  inset: 27%;
+  left: var(--dot-x, 0%);
+  top: var(--dot-y, 0%);
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: radial-gradient(ellipse, #83edcc48, transparent 68%);
+  background: #dbfff7;
+  box-shadow: 0 0 12px #7dffdc;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+.entry-motion[data-ready] .entry-motion-dot { opacity: 1; }
+
+.entry-motion-dot::after {
+  position: absolute;
+  inset: -5px;
+  border: 1px solid #8ff7df;
+  border-radius: inherit;
+  content: "";
+  opacity: 0;
+}
+
+.entry-motion[data-running] .entry-motion-dot::after {
+  animation: entry-pulse 1.8s ease-out infinite;
+}
+
+@keyframes entry-pulse {
+  0% { opacity: .8; transform: scale(.55); }
+  78%, 100% { opacity: 0; transform: scale(2.2); }
 }
 
 .entry-access {
@@ -222,22 +285,13 @@
   .entry-intro { min-height: 196px; padding: 24px; }
   .entry-copy h1 { font-size: clamp(48px, 10vw, 72px); }
   .entry-copy p { max-width: 23ch; margin-top: 13px; font-size: 14px; }
-  .entry-art { inset: auto -23% -55% 28%; height: 145%; }
+  .entry-motion { margin-top: 16px; }
+  .entry-motion-head { padding: 9px 11px 0; }
+  .entry-motion-plot { height: 64px; }
   .entry-access { padding: 22px 16px; }
   .portal-entry .entry-access .role-grid { margin-top: 15px; }
   .portal-entry .entry-access .role-card { min-height: 56px; grid-template-columns: 42px minmax(0, 1fr) 26px; gap: 10px; }
   .portal-entry .entry-access .role-card img { width: 42px; height: 42px; }
   .portal-entry .entry-access .role-card strong { font-size: 14px; }
   .portal-entry .entry-access .role-card::after { width: 26px; height: 26px; }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .entry-orbit { animation: orbit-reveal .9s cubic-bezier(.2,.65,.25,1) both; }
-  .entry-orbit:nth-child(2) { animation-delay: .08s; }
-  .entry-orbit:nth-child(3) { animation-delay: .16s; }
-
-  @keyframes orbit-reveal {
-    from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
 }
