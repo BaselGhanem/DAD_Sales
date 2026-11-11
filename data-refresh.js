@@ -39,9 +39,11 @@
     } catch { /* Retry automatically after connectivity returns. */ }
     finally { checking = false; }
   }
-  check(true);
-  setInterval(() => check(), 600000);
-  document.addEventListener(`visibilitychange`, () => { if (!document.hidden) check(); });
-  window.addEventListener(`focus`, () => check());
-  window.addEventListener(`online`, () => check());
+  window.addEventListener(`sales-dashboard-ready`, () => {
+    check(true);
+    setInterval(() => check(), 600000);
+    document.addEventListener(`visibilitychange`, () => { if (!document.hidden) check(); });
+    window.addEventListener(`focus`, () => check());
+    window.addEventListener(`online`, () => check());
+  }, {once:true});
 })();

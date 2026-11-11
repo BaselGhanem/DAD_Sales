@@ -16,9 +16,7 @@ button.onclick = async () => {
 };
 window.addEventListener(`appinstalled`,()=>{button.hidden=true;prompt=null});
 if(`serviceWorker` in navigator){
- const controlledAtStart=!!navigator.serviceWorker.controller;let refreshing=false;
- navigator.serviceWorker.addEventListener(`controllerchange`,()=>{if(controlledAtStart&&!refreshing){refreshing=true;location.reload()}});
- const register=()=>navigator.serviceWorker.register(`./sw.js`,{updateViaCache:`none`}).then(registration=>registration.update()).catch(()=>{});
+ const register=()=>navigator.serviceWorker.register(`./sw.js`,{updateViaCache:`none`}).catch(()=>{});
  if(document.readyState===`complete`)register();else window.addEventListener(`load`,register,{once:true});
 }
 document.querySelectorAll(`.mobile-nav [data-section]`).forEach(item=>item.onclick=()=>{

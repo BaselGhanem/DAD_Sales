@@ -7,7 +7,21 @@ const reducedLoaderMotion=matchMedia(`(prefers-reduced-motion: reduce)`).matches
 let rows=[],allRows=[],latest,period=`month`,page=1,charts={},targetRows=[],session,user,sourceMin;
 const esc=s=>String(s??``).replace(/[&<>"']/g,c=>({[`&`]:`&amp;`,[`<`]:`&lt;`,[`>`]:`&gt;`,[`"`]:`&quot;`,[`'`]:`&#39;`})[c]);
 const getSession=()=>{for(const storage of [localStorage,sessionStorage]){try{const val=JSON.parse(storage.getItem(`dad_sales_session_v1`));if(val&&Number.isFinite(val.expiresAt)&&val.expiresAt>Date.now()&&val.savedAt<=Date.now())return val}catch{}}return null};
-function excelDate(v){if(v instanceof Date)return S.iso(v);if(typeof v===`number`){const d=XLSX.SSF.parse_date_code(v);return d?`${d.y}-${String(d.m).padStart(2,`0`)}-${String(d.d).padStart(2,`0`)}`:null}const text=String(v??``).trim();if(/^\d{4}-\d{2}-\d{2}/.test(text))return text.slice(0,10);const parts=text.match(/^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})$/);if(parts)return `${parts[3]}-${parts[2].padStart(2,`0`)}-${parts[1].padStart(2,`0`)}`;return null}
+function loadSpreadsheetLibrary() {
+  if (typeof XLSX !== `undefined`) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const script = document.createElement(`script`);
+    script.src = `vendor/xlsx.full.min.js`;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.append(script);
+  });
+}
+async function loadTargets() {
+try{if(!await targetFileExists())return;
+await loadSpreadsheetLibrary();
+const tw=await workbook(`data/Targets.xlsx`,true);if(tw){const ts=tw.Sheets.Data;if(!ts)throw Error(`Targets sheet Data required`);const entries=XLSX.utils.sheet_to_json(ts,{defval:``}),keys=new Set();for(const t of entries){const targetRep=String(t.MR).trim();if(leadership?!rows.some(r=>r.rep===targetRep&&r.item===String(t[`Item Name`]).trim()):targetRep!==user.name)continue;const year=Number(t.Year),month=Number(t.Month),value=Number(t.Value),units=Number(t.Units),item=String(t[`Item Name`]||``).trim();if(!item||!Number.isInteger(year)||!Number.isInteger(month)||month<1||month>12||!Number.isFinite(value)||!Number.isFinite(units)||value<0||units<0)throw Error(`Invalid target`);const m=`${year}-${String(month).padStart(2,`0`)}`,key=`${targetRep}|${m}|${item}`;if(keys.has(key))throw Error(`Duplicate target`);keys.add(key);targetRows.push({rep:targetRep,item,month:m,value,units})}}renderTargets()}catch(e){targetRows=[];console.warn(`Target data not available or invalid`)}
+}
 async function targetFileExists(){
   // Discover optional uploads without requesting a missing static file.
   try {
@@ -45,12 +59,12 @@ function render(reset=true){if(!$(`from`).value||!$(`to`).value||$(`from`).value
 let previousFrom,previousTo;if(period===`year`){previousFrom=S.shiftMonth($(`from`).value,-12);previousTo=S.shiftMonth($(`to`).value,-12)}else{previousFrom=S.shiftMonth($(`from`).value,-1);previousTo=S.shiftMonth($(`to`).value,-1)}const pf={...filters,month:new Set([...filters.month].map(month=>S.shiftMonth(`${month}-01`,period===`year`?-12:-1).slice(0,7)))};const previous=S.sum(S.subset(rows,previousFrom,previousTo,pf)),coverage=previousFrom>=sourceMin;$(`comparison`).className=``;if(!coverage){$(`comparison`).textContent=`Comparison unavailable: previous-period data is incomplete.`}else if(previous<=0){$(`comparison`).textContent=`Change vs. previous period: ${fmt(m.net-previous)}`}else{const change=(m.net-previous)/previous*100;$(`comparison`).textContent=`${change>=0?`+`:``}${fmt(change)}% vs. previous period`;$(`comparison`).className=change>=0?`positive`:`negative`}$(`comparisonRange`).textContent=`${dateLabel(previousFrom)} — ${dateLabel(previousTo)}`;renderFilters();renderCharts(current);renderTargets();renderTable(current)}
 try{
 session=getSession();if(!session||session.role!==pageRole){location.replace(`index.html`);return}
-if(typeof XLSX===`undefined`||typeof Chart===`undefined`)throw Error(`Unable to load page components. Check your connection and try again.`);
+if(typeof Chart===`undefined`)throw Error(`Unable to load page components. Check your connection and try again.`);
 const accounts=await Credentials.load();user=accounts.users.find(u=>u.id===session.id&&u.enabled&&u.role===pageRole);if(!Credentials.valid(user,session)){localStorage.removeItem(`dad_sales_session_v1`);sessionStorage.removeItem(`dad_sales_session_v1`);location.replace(`index.html`);return}$(`loaderRepName`).textContent=user.name;$(`loadText`).textContent=`Preparing your sales dashboard`;
-const loaded=await new Promise((resolve,reject)=>{const worker=new Worker(`parser.worker.js?v=20261110_country`);const timeout=setTimeout(()=>{worker.terminate();reject(Error(`Data loading timed out. Please try again.`))},90000);worker.onmessage=event=>{clearTimeout(timeout);worker.terminate();event.data.error?reject(Error(event.data.error)):resolve(event.data)};worker.onerror=()=>{clearTimeout(timeout);worker.terminate();reject(Error(`Unable to start the data reader. Please refresh.`))};worker.postMessage({name:user.name,role:user.role,team:user.team,teams:user.teams})});
+const loaded=await new Promise((resolve,reject)=>{const worker=new Worker(`parser.worker.js?v=20261111_fast`);const timeout=setTimeout(()=>{worker.terminate();reject(Error(`Data loading timed out. Please try again.`))},90000);worker.onmessage=event=>{clearTimeout(timeout);worker.terminate();event.data.error?reject(Error(event.data.error)):resolve(event.data)};worker.onerror=()=>{clearTimeout(timeout);worker.terminate();reject(Error(`Unable to start the data reader. Please refresh.`))};worker.postMessage({name:user.name,role:user.role,team:user.team,teams:user.teams})});
 const supervisorLabels=new Map(accounts.users.filter(u=>u.role===`supervisor`).map(u=>[u.team,`${u.name} — ${u.team}`]));const unitLabels=new Map();for(const account of accounts.users.filter(u=>[`chronic`,`anti-infective`].includes(u.role)))for(const team of account.teams)unitLabels.set(team,account.name);rows=loaded.rows.map(row=>({...row,businessUnit:unitLabels.get(row.team)||`Unassigned`,supervisor:supervisorLabels.get(row.team)||row.team}));latest=loaded.latest;sourceMin=loaded.earliest;if(!rows.length)throw Error(`No sales records match your account in the current workbook.`);
 $(`repName`).textContent=businessUnit||countryManager?user.name:supervisor?`${user.name} · ${user.team}`:`Welcome ${user.name}`;$(`updated`).textContent=`Latest sales date: ${dateLabel(latest)}`;
-try{const tw=await targetFileExists()?await workbook(`data/Targets.xlsx`,true):null;if(tw){const ts=tw.Sheets.Data;if(!ts)throw Error(`Targets sheet Data required`);const entries=XLSX.utils.sheet_to_json(ts,{defval:``}),keys=new Set();for(const t of entries){const targetRep=String(t.MR).trim();if(leadership?!rows.some(r=>r.rep===targetRep&&r.item===String(t[`Item Name`]).trim()):targetRep!==user.name)continue;const year=Number(t.Year),month=Number(t.Month),value=Number(t.Value),units=Number(t.Units),item=String(t[`Item Name`]||``).trim();if(!item||!Number.isInteger(year)||!Number.isInteger(month)||month<1||month>12||!Number.isFinite(value)||!Number.isFinite(units)||value<0||units<0)throw Error(`Invalid target`);const m=`${year}-${String(month).padStart(2,`0`)}`,key=`${targetRep}|${m}|${item}`;if(keys.has(key))throw Error(`Duplicate target`);keys.add(key);targetRows.push({rep:targetRep,item,month:m,value,units})}}}catch(e){targetRows=[];console.warn(`Target data not available or invalid`)}
+
 Chart.defaults.font.family=`Segoe UI, Almarai, Arial, sans-serif`;Chart.defaults.color=`#526c7b`;Chart.defaults.font.size=14;
 document.querySelectorAll(`[data-period]`).forEach(b=>b.onclick=()=>setPeriod(b.dataset.period));for(const id of [`from`,`to`])$(id).onchange=()=>{period=`custom`;document.querySelectorAll(`[data-period]`).forEach(b=>b.classList.toggle(`active`,b.dataset.period===period));render()};$(`clear`).onclick=()=>{for(const key of Object.keys(filters))filters[key].clear();render()};$(`productLevel`).onchange=()=>renderCharts(current);$(`prev`).onclick=()=>{page--;renderTable(current)};$(`next`).onclick=()=>{page++;renderTable(current)};document.addEventListener(`click`,e=>{for(const detail of document.querySelectorAll(`details[open]`))if(!detail.contains(e.target))detail.open=false});document.addEventListener(`keydown`,e=>{if(e.key===`Escape`)for(const detail of document.querySelectorAll(`details[open]`))detail.open=false});$(`logout`).onclick=()=>{localStorage.removeItem(`dad_sales_session_v1`);sessionStorage.removeItem(`dad_sales_session_v1`);location.replace(`index.html`)};
 window.SalesOpportunities.init({rows:loaded.opportunityRows,ownRows:rows,latest});window.CustomerProfiles.init({rows:loaded.opportunityRows,ownRows:rows,latest});$(`dashboard`).hidden=false;setPeriod(`month`);
@@ -60,5 +74,9 @@ finally{
  $(`loading`).classList.add(`out`);
  await new Promise(resolve=>setTimeout(resolve,reducedLoaderMotion?0:350));
  $(`loading`).hidden=true;
+ if (!$(`dashboard`).hidden) {
+  window.dispatchEvent(new Event(`sales-dashboard-ready`));
+  void loadTargets();
+ }
 }
 })();
