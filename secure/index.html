@@ -117,6 +117,12 @@ h2{line-height:1.4;margin:0;overflow-wrap:anywhere}
 #hidden-toggle[aria-pressed="true"]{background:var(--teal);color:white}
 @media(prefers-reduced-motion:reduce){.person,.person .copy-message{transition:none}.person:hover,.person:focus-within{transform:none}}
 [hidden]{display:none!important}
+
+.person-head h2{min-width:0}
+.person .flip-name{min-height:44px;padding:0;border:0;background:transparent;color:inherit;font:inherit;line-height:inherit;white-space:normal;text-align:start;overflow-wrap:anywhere;touch-action:manipulation;user-select:none}
+.person .flip-name:hover:not(:disabled){text-decoration:underline;text-underline-offset:4px}
+.person[data-pin-visible] .flip-name{font-variant-numeric:tabular-nums}
+.person[data-pin-visible] .flip-name strong{font-size:1.25em;letter-spacing:.09em}
 </style>
 </head>
 <body>
@@ -256,7 +262,54 @@ function render() {
       }
       render();
     });
-    header.append(element(`h2`, name), visibility);
+    const heading = element(`h2`);
+    const nameButton = element(`button`, name, `flip-name`);
+    nameButton.type = `button`;
+    nameButton.disabled = !user.PIN;
+    nameButton.title = `دبل كليك لعرض رمز الدخول`;
+    nameButton.setAttribute(`aria-pressed`, `false`);
+    let pinVisible = false;
+    let flipping = false;
+    function updateCardFace() {
+      pinVisible = !pinVisible;
+      card.toggleAttribute(`data-pin-visible`, pinVisible);
+      nameButton.setAttribute(`aria-pressed`, String(pinVisible));
+      nameButton.title = pinVisible ? `دبل كليك لعرض الاسم` : `دبل كليك لعرض رمز الدخول`;
+      if (pinVisible) {
+        const pin = element(`strong`, user.PIN);
+        pin.dir = `ltr`;
+        nameButton.replaceChildren(document.createTextNode(`رمز الدخول `), pin);
+      } else {
+        nameButton.textContent = name;
+      }
+    }
+    async function flipCard() {
+      if (flipping || !user.PIN) return;
+      if (!card.animate || matchMedia(`(prefers-reduced-motion: reduce)`).matches) {
+        updateCardFace();
+        return;
+      }
+      flipping = true;
+      try {
+        await card.animate([
+          {transform: `perspective(900px) rotateY(0deg)`},
+          {transform: `perspective(900px) rotateY(90deg)`}
+        ], {duration: 140, easing: `ease-in`}).finished;
+        updateCardFace();
+        await card.animate([
+          {transform: `perspective(900px) rotateY(-90deg)`},
+          {transform: `perspective(900px) rotateY(0deg)`}
+        ], {duration: 210, easing: `ease-out`}).finished;
+      } finally {
+        flipping = false;
+      }
+    }
+    nameButton.addEventListener(`dblclick`, flipCard);
+    nameButton.addEventListener(`click`, event => {
+      if (event.detail === 0) flipCard();
+    });
+    heading.append(nameButton);
+    header.append(heading, visibility);
     const message = user.Username && user.PIN ? [
       `السلام عليكم سيد/ة ${name}، كيفك؟`,
       `تم تفعيل برنامج DAD Sales لمتابعة المبيعات`,
