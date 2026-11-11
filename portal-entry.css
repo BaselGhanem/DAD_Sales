@@ -1,0 +1,243 @@
+/* DAD Sales entry screen */
+.portal-entry {
+  min-height: 100svh;
+  padding: 0;
+  background: #eef4f5;
+}
+
+.portal-entry .shell {
+  width: min(1260px, calc(100% - 72px));
+  margin: 0 auto;
+  padding: 24px 0 42px;
+}
+
+.portal-entry .shell > .entry-header {
+  min-height: 72px;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.portal-entry .entry-header .logo { width: 170px; }
+
+.portal-entry .install-button {
+  position: static;
+  border: 1px solid #c9dddf;
+  border-radius: 100px;
+  background: #ffffffb5;
+  color: var(--portal-action);
+  padding: 10px 18px;
+  box-shadow: none;
+}
+
+.portal-entry .install-button:hover {
+  border-color: var(--portal-action);
+  background: var(--portal-tint);
+}
+
+.portal-entry .shell > .entry-frame {
+  display: grid;
+  grid-template-columns: minmax(0, 1.14fr) minmax(0, 1fr);
+  gap: 0;
+  min-height: 595px;
+  margin: 16px 0 0;
+  padding: 0;
+  overflow: hidden;
+  border-color: #d7e5e8;
+  border-radius: 30px;
+  background: #fff;
+  box-shadow: 0 28px 70px #15334a14;
+}
+
+.entry-intro {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  overflow: hidden;
+  padding: clamp(32px, 5.5vw, 76px);
+  background:
+    radial-gradient(ellipse at 88% 88%, #11676a 0, transparent 61%),
+    linear-gradient(145deg, #102d42, #0b2435 73%);
+  color: white;
+}
+
+.entry-intro::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  background-image:
+    linear-gradient(#b5ede80c 1px, transparent 1px),
+    linear-gradient(90deg, #b5ede80c 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(135deg, transparent 10%, #000 65%);
+}
+
+.entry-copy { position: relative; z-index: 1; }
+
+.entry-copy h1 {
+  margin: 0;
+  font-size: clamp(60px, 8.2vw, 116px);
+  line-height: .94;
+  letter-spacing: -.075em;
+  font-weight: 800;
+}
+
+.entry-copy h1 span { display: block; color: #95e2d8; }
+
+.entry-copy p {
+  max-width: 25ch;
+  margin: 24px 0 0;
+  color: #cee5e8;
+  font-size: clamp(15px, 1.45vw, 20px);
+  line-height: 1.55;
+}
+
+.entry-art {
+  position: absolute;
+  z-index: 0;
+  inset: auto -16% -35% 8%;
+  height: 78%;
+  transform: rotate(-22deg) skewX(-8deg);
+}
+
+.entry-orbit {
+  position: absolute;
+  inset: 0;
+  border: 1px solid #a3fff086;
+  border-radius: 50%;
+  background: linear-gradient(155deg, #75f3db30, #1c827410 52%, #93f2dc12);
+  box-shadow: inset 0 8px 22px #a4f9e937, 0 0 55px #14a9952b;
+}
+
+.entry-orbit:nth-child(2) { inset: 9%; }
+.entry-orbit:nth-child(3) { inset: 19%; }
+.entry-light {
+  position: absolute;
+  inset: 27%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #83edcc48, transparent 68%);
+}
+
+.entry-access {
+  min-width: 0;
+  padding: clamp(24px, 4.2vw, 62px);
+  align-self: center;
+}
+
+.portal-entry .entry-access section { text-align: start; }
+
+.portal-entry .entry-access h2 {
+  margin: 0;
+  font-size: clamp(22px, 2.7vw, 34px);
+  letter-spacing: -.038em;
+}
+
+.portal-entry .entry-access .role-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+  margin: 24px 0 0;
+}
+
+.portal-entry .entry-access .role-card {
+  grid-column: auto;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 28px;
+  justify-items: start;
+  gap: 13px;
+  min-height: 70px;
+  padding: 7px 14px 7px 8px;
+  border-radius: 14px;
+  background: #f7fafb;
+  text-align: start;
+}
+
+.portal-entry .entry-access .role-card img {
+  width: 52px;
+  height: 52px;
+  padding: 2px;
+  border-radius: 10px;
+  background: #e8f2f2;
+}
+
+.portal-entry .entry-access .role-card strong {
+  display: block;
+  min-height: 0;
+  font-size: 16px;
+}
+
+
+.portal-entry .entry-access .role-card::after {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #e8f2f2;
+  color: var(--portal-action);
+  content: "→" / "";
+  font-size: 17px;
+  line-height: 1;
+}
+
+.portal-entry .entry-access .role-card:hover,
+.portal-entry .entry-access .role-card:focus-visible {
+  transform: translateX(3px);
+  border-color: var(--portal-accent);
+  background: #edf8f7;
+}
+
+.portal-entry .entry-access .role-card:hover::after,
+.portal-entry .entry-access .role-card:focus-visible::after {
+  background: var(--portal-action);
+  color: white;
+}
+
+.portal-entry .entry-access .auth-card {
+  margin: 12px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+@media (max-width: 760px) {
+  .portal-entry .shell {
+    width: calc(100% - 28px);
+    padding: calc(8px + env(safe-area-inset-top)) 0 24px;
+  }
+
+  .portal-entry .shell > .entry-header { min-height: 58px; }
+  .portal-entry .entry-header .logo { width: 138px; }
+
+  .portal-entry .shell > .entry-frame {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    margin-top: 8px;
+    border-radius: 22px;
+  }
+
+  .entry-intro { min-height: 196px; padding: 24px; }
+  .entry-copy h1 { font-size: clamp(48px, 10vw, 72px); }
+  .entry-copy p { max-width: 23ch; margin-top: 13px; font-size: 14px; }
+  .entry-art { inset: auto -23% -55% 28%; height: 145%; }
+  .entry-access { padding: 22px 16px; }
+  .portal-entry .entry-access .role-grid { margin-top: 15px; }
+  .portal-entry .entry-access .role-card { min-height: 56px; grid-template-columns: 42px minmax(0, 1fr) 26px; gap: 10px; }
+  .portal-entry .entry-access .role-card img { width: 42px; height: 42px; }
+  .portal-entry .entry-access .role-card strong { font-size: 14px; }
+  .portal-entry .entry-access .role-card::after { width: 26px; height: 26px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .entry-orbit { animation: orbit-reveal .9s cubic-bezier(.2,.65,.25,1) both; }
+  .entry-orbit:nth-child(2) { animation-delay: .08s; }
+  .entry-orbit:nth-child(3) { animation-delay: .16s; }
+
+  @keyframes orbit-reveal {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}

@@ -7,7 +7,7 @@ const dialog = document.createElement(`dialog`); dialog.className = `install-dia
 const title = document.createElement(`h2`); title.textContent = `Install DAD Sales`;
 const text = document.createElement(`p`);
 const close = document.createElement(`button`); close.textContent = `Done`; close.onclick = () => dialog.close();
-dialog.append(title, text, close); document.body.append(button, dialog);
+dialog.append(title, text, close); (document.getElementById(`install-slot`) || document.body).append(button); document.body.append(dialog);
 window.addEventListener(`beforeinstallprompt`, event => {event.preventDefault(); prompt = event; if(!standalone()) button.hidden = false;});
 button.onclick = async () => {
  if(prompt){const current=prompt; prompt=null; await current.prompt(); const result=await current.userChoice; if(result.outcome===`accepted`)button.hidden=true; return;}
@@ -19,8 +19,4 @@ if(`serviceWorker` in navigator){
  const register=()=>navigator.serviceWorker.register(`./sw.js`,{updateViaCache:`none`}).catch(()=>{});
  if(document.readyState===`complete`)register();else window.addEventListener(`load`,register,{once:true});
 }
-document.querySelectorAll(`.mobile-nav [data-section]`).forEach(item=>item.onclick=()=>{
- document.getElementById(item.dataset.section)?.scrollIntoView({behavior:matchMedia(`(prefers-reduced-motion: reduce)`).matches?`auto`:`smooth`,block:`start`});
- document.querySelectorAll(`.mobile-nav button`).forEach(b=>b.classList.toggle(`active`,b===item));
-});
 })();

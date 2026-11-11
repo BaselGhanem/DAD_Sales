@@ -80,8 +80,39 @@ window.SalesOpportunities={init({rows,ownRows,latest}){
 KpiCounter.set(`oppCount`,current.length);KpiCounter.set(`oppValue`,current.reduce((s,c)=>s+(priorityMode?c.companyNet:c.otherValue),0));$(`oppAreaTitle`).textContent=areas.size?`${areas.size} areas selected`:`All areas`;$(`oppItemTitle`).textContent=selectedItems.size===1?[...selectedItems][0]:selectedItems.size?`${selectedItems.size} items selected`:`All my items`;for(const box of itemOptions.querySelectorAll(`input`))box.checked=box.value?selectedItems.has(box.value):!selectedItems.size;const chips=$(`oppChips`);chips.replaceChildren();for(const [values,label] of [[selectedUnits,`Business unit`],[selectedSupervisors,`Supervisor`],[selectedTeams,`Team`],[selectedReps,`Representative`]])for(const value of values){const button=document.createElement(`button`);button.type=`button`;button.textContent=`${label}: ${value} ×`;button.onclick=()=>{values.delete(value);render()};chips.append(button)}for(const [control,label] of [[group,`Product group`],[query,`Customer`],[minValue,`Minimum purchases`],[maxValue,`Maximum purchases`],...(priorityMode?[[minMissing,`Minimum item count`]]:[])])if(control.value){const b=document.createElement(`button`);b.type=`button`;b.textContent=`${label}: ${control.value} ×`;b.onclick=()=>{control.value=``;render()};chips.append(b)}for(const area of areas){const b=document.createElement(`button`);b.type=`button`;b.textContent=`${area} ×`;b.onclick=()=>{areas.delete(area);for(const label of options.children)label.querySelector(`input`).checked=areas.has(label.dataset.search);render()};chips.append(b)}for(const value of selectedItems){const b=document.createElement(`button`);b.type=`button`;b.textContent=`${value} ×`;b.onclick=()=>{selectedItems.delete(value);render()};chips.append(b)}$(`oppStatus`).textContent=current.length?`${current.length} customers match this period and filters`:`No opportunities match this period and filters.`;const section=$(`opportunities`);section.querySelector(`.filters-panel h2`).textContent=priorityMode?`Follow-up priorities`:`Sales opportunities`;$(`oppCount`).previousElementSibling.textContent=priorityMode?`Customers to follow up`:`Opportunity customers`;$(`oppValue`).previousElementSibling.textContent=priorityMode?`Net company purchases`:`Net purchases of other items`;const headings=priorityMode?[`Customer`,`Area`,`Last company purchase`,`Net company purchases`,`Your items to follow up`]:[`Customer`,`Area`,`Last purchase of other items`,`Net purchases of other items`,`Other items purchased`];section.querySelectorAll(`thead th`).forEach((th,i)=>th.textContent=headings[i]);table()}
  for(const element of [group,minValue,maxValue,minMissing])element.onchange=render;for(const element of [from,to])element.onchange=()=>{periodMode=`custom`;render()};query.oninput=render;
  $(`oppMonth`).onclick=()=>{periodMode=`month`;from.value=`${latest.slice(0,7)}-01`;to.value=latest;render()};$(`oppYear`).onclick=()=>{periodMode=`year`;from.value=`${latest.slice(0,4)}-01-01`;to.value=`${latest.slice(0,4)}-12-31`;render()};$(`oppClear`).onclick=()=>{selectedUnits.clear();selectedSupervisors.clear();for(const id of [`oppUnitSearch`,`oppSupervisorSearch`])if($(id))$(id).value=``;selectedTeams.clear();selectedReps.clear();$(`oppTeamSearch`).value=``;$(`oppRepSearch`).value=``;areas.clear();selectedItems.clear();item.value=``;group.value=``;query.value=``;minValue.value=``;maxValue.value=``;minMissing.value=``;$(`oppAreaSearch`).value=``;$(`oppItemSearch`).value=``;for(const label of [...options.children,...itemOptions.children])label.hidden=false;for(const box of options.querySelectorAll(`input`))box.checked=false;render()};$(`oppPrev`).onclick=()=>{page--;table()};$(`oppNext`).onclick=()=>{page++;table()};
- function tab(name){const opportunity=name===`opportunities`||name===`priorities`;priorityMode=name===`priorities`;$(`salesView`).hidden=opportunity;$(`opportunities`).hidden=!opportunity;document.querySelectorAll(`[data-tab]`).forEach(b=>{const active=b.dataset.tab===name;b.classList.toggle(`active`,active);b.setAttribute(`aria-pressed`,`${active}`)});if(opportunity)render()}
- document.querySelectorAll(`[data-tab]`).forEach(b=>b.addEventListener(`click`,()=>tab(b.dataset.tab)));document.querySelectorAll(`.mobile-nav [data-section]`).forEach(b=>b.addEventListener(`click`,()=>tab(`sales`),true));
+ const tabs = [...document.querySelectorAll(`#dashboard [data-tab]`)];
+ const mobileButtons = [...document.querySelectorAll(`.mobile-nav button`)];
+ const setSelected = (button, selected) => {
+  button.classList.toggle(`active`, selected);
+  button.setAttribute(`aria-pressed`, `${selected}`);
+ };
+ function showView(name, section = `overview`) {
+  const isSales = name === `sales`;
+  priorityMode = name === `priorities`;
+  $(`salesView`).hidden = !isSales;
+  $(`opportunities`).hidden = isSales;
+  for (const button of tabs) setSelected(button, button.dataset.tab === name);
+  for (const button of mobileButtons) {
+   const selected = isSales ? button.dataset.section === section : button.dataset.tab === name;
+   setSelected(button, selected);
+  }
+  if (!isSales) render();
+ }
+ for (const button of tabs) {
+  button.addEventListener(`click`, () => {
+   showView(button.dataset.tab);
+   if (button.closest(`.mobile-nav`)) $(`dashboard`).scrollIntoView({block: `start`});
+  });
+ }
+ for (const button of mobileButtons.filter(button => button.dataset.section)) {
+  button.addEventListener(`click`, () => {
+   const section = button.dataset.section;
+   showView(`sales`, section);
+   const behavior = matchMedia(`(prefers-reduced-motion: reduce)`).matches ? `auto` : `smooth`;
+   $(section)?.scrollIntoView({behavior, block: `start`});
+  });
+ }
+ showView(`sales`);
  return () => profileContext;
 }};
 })();
