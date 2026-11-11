@@ -20,11 +20,24 @@ button:hover{border-color:var(--teal)}:focus-visible{outline:2px solid #099999;o
 input[type=search]{flex:1 1 220px;min-width:0;min-height:42px;padding:8px 12px;border:1px solid var(--line);border-radius:9px;color:var(--ink)}
 #count,#status{font-size:14px;color:var(--muted)}#status{min-height:1.6em;margin:10px 3px}
 #results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:12px}
-.person{min-width:0;padding:14px}.person-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
-h2{font-size:16px;line-height:1.4;margin:0;overflow-wrap:anywhere}
-dl{margin:0}.cell{display:grid;padding:8px 0;border-top:1px solid #edf3f3}
-dt{font-size:12px;color:var(--muted)}dd{margin:0;font-size:15px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
-.person{display:flex;flex-direction:column}.person dl{flex:1}.copy-message{width:100%;margin-top:10px;min-height:44px;background:var(--teal);color:white}.copy-message:hover{background:#065f60}
+h2{line-height:1.4;margin:0;overflow-wrap:anywhere}
+
+#results{grid-template-columns:repeat(auto-fill,minmax(min(100%,245px),1fr));gap:16px}
+.person{--card-ink:#15544e;--card-base:#e1f4ee;--card-light:#f4fbf8;--card-line:#b9dfd3;position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:18px;min-height:146px;padding:18px;border-radius:19px;border:1px solid var(--card-line);background:linear-gradient(145deg,var(--card-light),var(--card-base));color:var(--card-ink);box-shadow:0 8px 20px #1738440b;transition:transform .18s ease,box-shadow .18s ease}
+.person[data-tone="1"]{--card-ink:#274f79;--card-base:#e2effb;--card-light:#f6faff;--card-line:#c5dcef}
+.person[data-tone="2"]{--card-ink:#65446e;--card-base:#f0e6f4;--card-light:#fcf8fd;--card-line:#e3cde9}
+.person[data-tone="3"]{--card-ink:#744b27;--card-base:#faead8;--card-light:#fffbf4;--card-line:#edd2b2}
+.person[data-tone="4"]{--card-ink:#456237;--card-base:#e9f1dc;--card-light:#f8fbf1;--card-line:#d1e1ba}
+.person[data-tone="5"]{--card-ink:#793f50;--card-base:#f8e5eb;--card-light:#fff8fa;--card-line:#edcbd7}
+.person::before{position:absolute;z-index:-1;inset-inline-end:-40px;top:-58px;width:146px;height:146px;border:1px solid var(--card-line);border-radius:50%;box-shadow:0 0 0 14px #ffffff40,0 0 0 29px #ffffff30;content:"";pointer-events:none}
+.person:hover,.person:focus-within{transform:translateY(-3px);box-shadow:0 14px 24px #17384418}
+.person-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0}
+.person h2{font-size:17px;color:var(--card-ink)}
+.person .hide-card{min-height:44px;background:#ffffff9e;border-color:var(--card-line);color:var(--card-ink)}
+.person .copy-message{width:100%;margin:0;min-height:44px;border-color:var(--card-ink);background:var(--card-ink);color:white;transition:filter .18s ease}
+.person .copy-message:hover{filter:brightness(1.14)}
+#hidden-toggle[aria-pressed="true"]{background:var(--teal);color:white}
+@media(prefers-reduced-motion:reduce){.person,.person .copy-message{transition:none}.person:hover,.person:focus-within{transform:none}}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -36,7 +49,8 @@ dt{font-size:12px;color:var(--muted)}dd{margin:0;font-size:15px;overflow-wrap:an
   </header>
   <section class="tools" aria-label="تحميل وبحث">
     <button id="refresh" type="button">تحديث البيانات</button>
-    <input id="search" type="search" placeholder="ابحث بالاسم او الفريق" aria-label="بحث" hidden>
+    <input id="search" type="search" placeholder="ابحث بالاسم" aria-label="بحث" hidden>
+    <button id="hidden-toggle" type="button" aria-pressed="false" hidden></button>
     <span id="count"></span>
   </section>
   <p id="status" role="status">جاري تحميل الحسابات من GitHub</p>
@@ -56,7 +70,15 @@ const source = `https://raw.githubusercontent.com/BaselGhanem/DAD_Sales/main/cre
 const search = byId(`search`);
 const results = byId(`results`);
 const status = byId(`status`);
+const hiddenToggle = byId(`hidden-toggle`);
+const storageKey = `dad-sales-secure-hidden-v1`;
 let users = [];
+let showHidden = false;
+let hiddenUsers = new Set();
+try {
+  const saved = JSON.parse(localStorage.getItem(storageKey) || `[]`);
+  if (Array.isArray(saved)) hiddenUsers = new Set(saved.filter(value => typeof value === `string`));
+} catch { /* Keep the page usable when storage is unavailable. */ }
 
 function parseCSV(source) {
   const text = source.replace(/^\uFEFF/, ``);
@@ -127,32 +149,46 @@ function copyButton(label, value, accessibleName) {
 
 function render() {
   const query = search.value.trim().toLocaleLowerCase();
-  const visible = users.filter(user => [`Medical Representative`, `Team`]
-    .some(key => user[key].toLocaleLowerCase().includes(query)));
+  const hiddenCount = users.filter(user => hiddenUsers.has(user.Username)).length;
+  if (!hiddenCount) showHidden = false;
+  hiddenToggle.hidden = !hiddenCount;
+  hiddenToggle.textContent = showHidden ? `العودة للبطاقات الظاهرة` : `المخفية (${hiddenCount})`;
+  hiddenToggle.setAttribute(`aria-pressed`, String(showHidden));
+  const visible = users.map((user, index) => ({user, index})).filter(({user}) =>
+    hiddenUsers.has(user.Username) === showHidden &&
+    user[`Medical Representative`].toLocaleLowerCase().includes(query));
   const cards = document.createDocumentFragment();
-  for (const user of visible) {
+  for (const {user, index} of visible) {
     const name = user[`Medical Representative`] || `—`;
     const card = element(`article`, undefined, `person`);
+    card.dataset.tone = String(index % 6);
     const header = element(`div`, undefined, `person-head`);
-    header.append(element(`h2`, name));
-    const list = element(`dl`);
-    for (const [key, label] of [[`PIN`, `رمز الدخول`], [`Team`, `الفريق`]]) {
-      const cell = element(`div`, undefined, `cell`);
-      const value = element(`dd`, user[key] || `—`);
-      value.dir = `auto`;
-      cell.append(element(`dt`, label), value);
-      list.append(cell);
-    }
+    const visibility = element(`button`, showHidden ? `استرجاع` : `اخفاء`, `hide-card`);
+    visibility.type = `button`;
+    visibility.setAttribute(`aria-label`, `${visibility.textContent} بطاقة ${name}`);
+    visibility.disabled = !user.Username;
+    visibility.addEventListener(`click`, () => {
+      if (showHidden) hiddenUsers.delete(user.Username);
+      else hiddenUsers.add(user.Username);
+      try {
+        localStorage.setItem(storageKey, JSON.stringify([...hiddenUsers]));
+        status.textContent = showHidden ? `تم استرجاع البطاقة` : `تم اخفاء البطاقة`;
+      } catch {
+        status.textContent = `تعذر حفظ حالة البطاقة بعد اغلاق الصفحة`;
+      }
+      render();
+    });
+    header.append(element(`h2`, name), visibility);
     const message = user.Username && user.PIN ? [
-      `السلام عليكم، كيفك؟`,
+      `السلام عليكم سيد/ة ${name}، كيفك؟`,
       `تم تفعيل برنامج DAD Sales لمتابعة المبيعات`,
       `اسم المستخدم: ${user.Username}\nرمز الدخول: ${user.PIN}`,
       `رابط الدخول\nhttps://baselghanem.github.io/DAD_Sales/`,
       `اعتبارا من وقت وصول هاي الرسالة، رح يتوقف ارسال تقرير الاكسل اليومي، وبتقدر تتابع مبيعاتك من خلال البرنامج`
     ].join(`\n\n`) : ``;
-    const button = copyButton(`نسخ رسالة التفعيل`, message, `نسخ رسالة التفعيل لحساب ${name}`);
+    const button = copyButton(`Copy`, message, `نسخ رسالة التفعيل لحساب ${name}`);
     button.classList.add(`copy-message`);
-    card.append(header, list, button);
+    card.append(header, button);
     cards.append(card);
   }
   results.replaceChildren(cards);
@@ -168,7 +204,7 @@ async function loadAccounts() {
     users = parseCSV(await response.text());
     search.hidden = !users.length;
     render();
-    status.textContent = users.length ? `اضغط نسخ رسالة التفعيل تحت بطاقة الشخص` : `الملف ما فيه حسابات`;
+    status.textContent = users.length ? `اضغط Copy تحت بطاقة الشخص` : `الملف ما فيه حسابات`;
   } catch {
     status.textContent = users.length
       ? `تعذر التحديث من GitHub، البيانات المعروضة من اخر تحميل ناجح`
@@ -178,6 +214,11 @@ async function loadAccounts() {
   }
 }
 
+hiddenToggle.addEventListener(`click`, () => {
+  showHidden = !showHidden;
+  search.value = ``;
+  render();
+});
 search.addEventListener(`input`, render);
 refresh.addEventListener(`click`, loadAccounts);
 loadAccounts();
