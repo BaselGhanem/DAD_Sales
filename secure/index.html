@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f3f8f8">
+<title>Secure | DAD Sales</title>
+<style>
+:root{color-scheme:light;--ink:#163446;--muted:#526c77;--line:#d6e6e7;--teal:#087575;--tint:#eaf7f5;font:16px/1.6 Almarai,"Segoe UI",Tahoma,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:#f3f8f8;color:var(--ink)}
+main{width:min(1120px,calc(100% - 28px));margin:clamp(14px,5vw,48px) auto}
+header{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:clamp(18px,4vw,32px);background:#123847;color:#fff;border-radius:22px}
+h1{margin:0;font-size:clamp(28px,5vw,42px);line-height:1.1}header p{margin:7px 0 0;color:#d1edeb;font-size:14px}
+a{color:var(--teal);text-underline-offset:4px}header a{color:#e0fbf7;font-size:14px}
+.tools,.person{background:white;border:1px solid var(--line);border-radius:16px}
+.tools{margin:14px 0;padding:16px;display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+button,input,.pick{font:inherit}button,.pick{cursor:pointer;border:1px solid #cce4e2;border-radius:9px;background:var(--tint);color:var(--teal);font-size:13px;font-weight:700;padding:7px 10px;min-height:40px;white-space:nowrap}
+.pick{display:inline-flex;align-items:center;background:var(--teal);color:white}
+button:hover{border-color:var(--teal)}:focus-visible,.pick:focus-within{outline:2px solid #099999;outline-offset:3px}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
+input[type=search]{flex:1 1 220px;min-width:0;min-height:42px;padding:8px 12px;border:1px solid var(--line);border-radius:9px;color:var(--ink)}
+#count,#status{font-size:14px;color:var(--muted)}#status{min-height:1.6em;margin:10px 3px}
+#results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:12px}
+.person{min-width:0;padding:14px}.person-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+h2{font-size:16px;line-height:1.4;margin:0;overflow-wrap:anywhere}
+dl{margin:0}.cell{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid #edf3f3}
+dt{font-size:12px;color:var(--muted)}dd{margin:0;font-size:15px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div><h1 dir="ltr">Secure</h1><p>نسخ بيانات الدخول لكل مستخدم</p></div>
+    <a href="https://github.com/BaselGhanem/DAD_Sales/blob/main/credentials.csv" target="_blank" rel="noopener noreferrer" dir="ltr">credentials.csv</a>
+  </header>
+  <section class="tools" aria-label="تحميل وبحث">
+    <label class="pick">اختيار ملف CSV<input id="csv" type="file" accept=".csv,text/csv"></label>
+    <input id="search" type="search" placeholder="ابحث بالاسم او المستخدم او الفريق" aria-label="بحث" hidden>
+    <button id="clear" type="button" hidden>مسح البيانات</button>
+    <span id="count"></span>
+  </section>
+  <p id="status" role="status">نزل الملف من الرابط فوق واختره من جهازك</p>
+  <div id="results"></div>
+</main>
+<script>
+const fields = [
+  [`Username`, `اسم المستخدم`],
+  [`Medical Representative`, `الاسم`],
+  [`PIN`, `رمز الدخول`],
+  [`Role`, `الدور`],
+  [`Team`, `الفريق`]
+];
+const byId = id => document.getElementById(id);
+const fileInput = byId(`csv`);
+const search = byId(`search`);
+const clearButton = byId(`clear`);
+const results = byId(`results`);
+const status = byId(`status`);
+let users = [];
+let importVersion = 0;
+
+function parseCSV(source) {
+  const text = source.replace(/^\uFEFF/, ``);
+  const rows = [];
+  let row = [];
+  let cell = ``;
+  let quoted = false;
+  function pushRow() {
+    row.push(cell);
+    if (row.some(value => value.trim())) rows.push(row);
+    row = [];
+    cell = ``;
+  }
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (char === `"`) {
+      if (quoted && text[i + 1] === `"`) {
+        cell += char;
+        i++;
+      } else {
+        quoted = !quoted;
+      }
+    } else if (!quoted && char === `,`) {
+      row.push(cell);
+      cell = ``;
+    } else if (!quoted && (char === `\r` || char === `\n`)) {
+      if (char === `\r` && text[i + 1] === `\n`) i++;
+      pushRow();
+    } else {
+      cell += char;
+    }
+  }
+  if (quoted) throw new Error(`في علامة اقتباس غير مغلقة في الملف`);
+  pushRow();
+  const headers = (rows.shift() || []).map(value => value.trim());
+  const required = fields.slice(0, 3).map(([key]) => key);
+  if (!required.every(key => headers.includes(key))) {
+    throw new Error(`الملف لازم يحتوي على Username وMedical Representative وPIN`);
+  }
+  return rows.map(values => Object.fromEntries(
+    fields.map(([key]) => [key, values[headers.indexOf(key)]?.trim() ?? ``])
+  ));
+}
+
+function element(tag, text, className) {
+  const node = document.createElement(tag);
+  if (text !== undefined) node.textContent = text;
+  if (className) node.className = className;
+  return node;
+}
+
+function copyButton(label, value, accessibleName) {
+  const button = element(`button`, label);
+  button.type = `button`;
+  button.setAttribute(`aria-label`, accessibleName);
+  button.disabled = !value;
+  button.addEventListener(`click`, async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      status.textContent = `تم النسخ`;
+      button.textContent = `Copied ✓`;
+    } catch {
+      status.textContent = `النسخ ما اشتغل، تاكد من اذن الحافظة في المتصفح`;
+    }
+  });
+  return button;
+}
+
+function render() {
+  const query = search.value.trim().toLocaleLowerCase();
+  const visible = users.filter(user => [`Username`, `Medical Representative`, `Role`, `Team`]
+    .some(key => user[key].toLocaleLowerCase().includes(query)));
+  const cards = document.createDocumentFragment();
+  for (const user of visible) {
+    const name = user[`Medical Representative`] || user.Username;
+    const card = element(`article`, undefined, `person`);
+    const header = element(`div`, undefined, `person-head`);
+    const message = [
+      `DAD Sales`,
+      `https://baselghanem.github.io/DAD_Sales/`,
+      ...fields.filter(([key]) => user[key]).map(([key, label]) => `${label}: ${user[key]}`)
+    ].join(`\n`);
+    header.append(element(`h2`, name), copyButton(`Copy all`, message, `نسخ بيانات ${name}`));
+    const list = element(`dl`);
+    for (const [key, label] of fields) {
+      const cell = element(`div`, undefined, `cell`);
+      const content = element(`div`);
+      const value = element(`dd`, user[key] || `—`);
+      value.dir = `auto`;
+      content.append(element(`dt`, label), value);
+      cell.append(content, copyButton(`Copy`, user[key], `نسخ ${label} لحساب ${name}`));
+      list.append(cell);
+    }
+    card.append(header, list);
+    cards.append(card);
+  }
+  results.replaceChildren(cards);
+  byId(`count`).textContent = users.length ? `${visible.length} / ${users.length} حساب` : ``;
+}
+
+fileInput.addEventListener(`change`, async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+  const version = ++importVersion;
+  search.value = ``;
+  users = [];
+  render();
+  search.hidden = true;
+  clearButton.hidden = false;
+  status.textContent = `جاري قراءة الملف`;
+  try {
+    const parsed = parseCSV(await file.text());
+    if (version !== importVersion) return;
+    users = parsed;
+    search.hidden = !users.length;
+    status.textContent = users.length ? `اختر الخلية اللي بدك تنسخها` : `الملف ما فيه حسابات`;
+  } catch (error) {
+    if (version !== importVersion) return;
+    status.textContent = error.message;
+  }
+  render();
+});
+search.addEventListener(`input`, render);
+clearButton.addEventListener(`click`, () => {
+  importVersion++;
+  users = [];
+  fileInput.value = search.value = ``;
+  search.hidden = clearButton.hidden = true;
+  status.textContent = `تم مسح البيانات من الصفحة`;
+  render();
+});
+</script>
+</body>
+</html>
