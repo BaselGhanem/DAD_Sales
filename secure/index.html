@@ -22,20 +22,21 @@ input[type=search]{flex:1 1 220px;min-width:0;min-height:42px;padding:8px 12px;b
 #results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:12px}
 .person{min-width:0;padding:14px}.person-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
 h2{font-size:16px;line-height:1.4;margin:0;overflow-wrap:anywhere}
-dl{margin:0}.cell{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid #edf3f3}
+dl{margin:0}.cell{display:grid;padding:8px 0;border-top:1px solid #edf3f3}
 dt{font-size:12px;color:var(--muted)}dd{margin:0;font-size:15px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.person{display:flex;flex-direction:column}.person dl{flex:1}.copy-message{width:100%;margin-top:10px;min-height:44px;background:var(--teal);color:white}.copy-message:hover{background:#065f60}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
 <main>
   <header>
-    <div><h1 dir="ltr">Secure</h1><p>نسخ بيانات الدخول لكل مستخدم</p></div>
+    <div><h1 dir="ltr">Secure</h1><p>رسائل تفعيل برنامج المبيعات</p></div>
     <a href="https://github.com/BaselGhanem/DAD_Sales/blob/main/credentials.csv" target="_blank" rel="noopener noreferrer" dir="ltr">credentials.csv</a>
   </header>
   <section class="tools" aria-label="تحميل وبحث">
     <button id="refresh" type="button">تحديث البيانات</button>
-    <input id="search" type="search" placeholder="ابحث بالاسم او المستخدم او الفريق" aria-label="بحث" hidden>
+    <input id="search" type="search" placeholder="ابحث بالاسم او الفريق" aria-label="بحث" hidden>
     <span id="count"></span>
   </section>
   <p id="status" role="status">جاري تحميل الحسابات من GitHub</p>
@@ -115,8 +116,8 @@ function copyButton(label, value, accessibleName) {
   button.addEventListener(`click`, async () => {
     try {
       await navigator.clipboard.writeText(value);
-      status.textContent = `تم النسخ`;
-      button.textContent = `Copied ✓`;
+      status.textContent = `تم نسخ رسالة التفعيل`;
+      button.textContent = `تم النسخ ✓`;
     } catch {
       status.textContent = `النسخ ما اشتغل، تاكد من اذن الحافظة في المتصفح`;
     }
@@ -126,30 +127,32 @@ function copyButton(label, value, accessibleName) {
 
 function render() {
   const query = search.value.trim().toLocaleLowerCase();
-  const visible = users.filter(user => [`Username`, `Medical Representative`, `Role`, `Team`]
+  const visible = users.filter(user => [`Medical Representative`, `Team`]
     .some(key => user[key].toLocaleLowerCase().includes(query)));
   const cards = document.createDocumentFragment();
   for (const user of visible) {
-    const name = user[`Medical Representative`] || user.Username;
+    const name = user[`Medical Representative`] || `—`;
     const card = element(`article`, undefined, `person`);
     const header = element(`div`, undefined, `person-head`);
-    const message = [
-      `DAD Sales`,
-      `https://baselghanem.github.io/DAD_Sales/`,
-      ...fields.filter(([key]) => user[key]).map(([key, label]) => `${label}: ${user[key]}`)
-    ].join(`\n`);
-    header.append(element(`h2`, name), copyButton(`Copy all`, message, `نسخ بيانات ${name}`));
+    header.append(element(`h2`, name));
     const list = element(`dl`);
-    for (const [key, label] of fields) {
+    for (const [key, label] of [[`PIN`, `رمز الدخول`], [`Team`, `الفريق`]]) {
       const cell = element(`div`, undefined, `cell`);
-      const content = element(`div`);
       const value = element(`dd`, user[key] || `—`);
       value.dir = `auto`;
-      content.append(element(`dt`, label), value);
-      cell.append(content, copyButton(`Copy`, user[key], `نسخ ${label} لحساب ${name}`));
+      cell.append(element(`dt`, label), value);
       list.append(cell);
     }
-    card.append(header, list);
+    const message = user.Username && user.PIN ? [
+      `السلام عليكم، كيفك؟`,
+      `تم تفعيل برنامج DAD Sales لمتابعة المبيعات`,
+      `اسم المستخدم: ${user.Username}\nرمز الدخول: ${user.PIN}`,
+      `رابط الدخول\nhttps://baselghanem.github.io/DAD_Sales/`,
+      `اعتبارا من وقت وصول هاي الرسالة، رح يتوقف ارسال تقرير الاكسل اليومي، وبتقدر تتابع مبيعاتك من خلال البرنامج`
+    ].join(`\n\n`) : ``;
+    const button = copyButton(`نسخ رسالة التفعيل`, message, `نسخ رسالة التفعيل لحساب ${name}`);
+    button.classList.add(`copy-message`);
+    card.append(header, list, button);
     cards.append(card);
   }
   results.replaceChildren(cards);
@@ -165,7 +168,7 @@ async function loadAccounts() {
     users = parseCSV(await response.text());
     search.hidden = !users.length;
     render();
-    status.textContent = users.length ? `اختر الخلية اللي بدك تنسخها` : `الملف ما فيه حسابات`;
+    status.textContent = users.length ? `اضغط نسخ رسالة التفعيل تحت بطاقة الشخص` : `الملف ما فيه حسابات`;
   } catch {
     status.textContent = users.length
       ? `تعذر التحديث من GitHub، البيانات المعروضة من اخر تحميل ناجح`
