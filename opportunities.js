@@ -3,12 +3,12 @@ const $=id=>document.getElementById(id),S=Sales,n=n=>new Intl.NumberFormat(`en-U
 function territoryScope(ownRows,teams,reps){const scoped=ownRows.filter(r=>(!teams.size||teams.has(r.team))&&(!reps.size||reps.has(r.rep)));return {ownRows:scoped,items:[...new Set(scoped.map(r=>r.item))],areas:new Set(scoped.map(r=>r.area))};}
 function compute(rows,owned,selected,areas,from,to){
  const wanted=new Set(selected.length?selected:owned),customers=new Map();
- for(const r of rows){if(r.date<from||r.date>to||(areas.size&&!areas.has(r.area)))continue;let c=customers.get(r.customer);if(!c){c={customer:r.customer,name:r.customerName,areas:new Set(),last:``,otherValue:0,otherUnits:0,otherItems:new Map(),target:new Map()};customers.set(r.customer,c)}c.areas.add(r.area);
+ for(const r of rows){if(r.date<from||r.date>to||(areas.size&&!areas.has(r.area)))continue;let c=customers.get(r.customer);if(!c){c={customer:r.customer,name:r.customerName,areas:new Set(),last:``,otherValue:0,otherItems:new Map(),target:new Map()};customers.set(r.customer,c)}c.areas.add(r.area);
  if(wanted.has(r.item))c.target.set(r.item,(c.target.get(r.item)||0)+r.units);
  // Other products are the complement of the selected item scope.
- if(!wanted.has(r.item)){c.otherValue+=r.value;c.otherUnits+=r.units;c.otherItems.set(r.item,(c.otherItems.get(r.item)||0)+r.units);if(r.units>0&&r.date>c.last)c.last=r.date}
+ if(!wanted.has(r.item)){c.otherValue+=r.value;c.otherItems.set(r.item,(c.otherItems.get(r.item)||0)+r.units);if(r.units>0&&r.date>c.last)c.last=r.date}
  }
- return [...customers.values()].filter(c=>c.otherValue>0&&c.otherUnits>0&&[...c.target.values()].every(units=>units<=0)).sort((a,b)=>b.otherValue-a.otherValue);
+ return [...customers.values()].filter(c=>c.otherValue>0&&[...c.otherItems.values()].some(units=>units>0)&&[...c.target.values()].every(units=>units<=0)).sort((a,b)=>b.otherValue-a.otherValue);
 }
 
 function priorities(rows,owned,selected,areas,from,to){
