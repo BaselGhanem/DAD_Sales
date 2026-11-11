@@ -8,11 +8,11 @@
 .portal-entry .shell {
   width: min(1260px, calc(100% - 72px));
   margin: 0 auto;
-  padding: 24px 0 42px;
+  padding: 12px 0;
 }
 
 .portal-entry .shell > .entry-header {
-  min-height: 72px;
+  min-height: 52px;
   padding: 0 2px;
   border: 0;
   background: transparent;
@@ -40,8 +40,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1.14fr) minmax(0, 1fr);
   gap: 0;
-  min-height: 595px;
-  margin: 16px 0 0;
+  min-height: clamp(0px, calc(100svh - 88px), 650px);
+  margin: 12px 0 0;
   padding: 0;
   overflow: hidden;
   border-color: #d7e5e8;
@@ -58,7 +58,7 @@
   justify-content: space-between;
   min-width: 0;
   overflow: hidden;
-  padding: clamp(32px, 5.5vw, 76px);
+  padding: clamp(22px, 5.5svh, 52px) clamp(26px, 5vw, 74px);
   background:
     radial-gradient(ellipse at 88% 88%, #11676a 0, transparent 61%),
     linear-gradient(145deg, #102d42, #0b2435 73%);
@@ -81,7 +81,7 @@
 
 .entry-copy h1 {
   margin: 0;
-  font-size: clamp(58px, 6.5vw, 94px);
+  font-size: clamp(48px, min(6.5vw, 11svh), 88px);
   line-height: .94;
   letter-spacing: -.075em;
   font-weight: 800;
@@ -91,7 +91,7 @@
 
 .entry-copy p {
   max-width: 25ch;
-  margin: 24px 0 0;
+  margin: 16px 0 0;
   color: #cee5e8;
   font-size: clamp(15px, 1.45vw, 20px);
   line-height: 1.55;
@@ -101,7 +101,7 @@
   position: relative;
   z-index: 1;
   min-width: 0;
-  margin-top: 28px;
+  margin-top: 18px;
   border: 1px solid #a6e5df38;
   border-radius: 18px;
   background: #082b3b91;
@@ -133,21 +133,9 @@
   letter-spacing: -.04em;
 }
 
-#entry-motion-toggle {
-  min-height: 44px;
-  padding: 6px 11px;
-  border: 1px solid #a6e5df42;
-  border-radius: 100px;
-  background: #102f3f;
-  color: #d5f3ef;
-  font-size: 12px;
-}
-
-#entry-motion-toggle:focus-visible { outline-color: #c9fff4; }
-
 .entry-motion-plot {
   position: relative;
-  height: clamp(75px, 9vw, 115px);
+  height: clamp(60px, 12svh, 105px);
   margin-top: 4px;
 }
 
@@ -168,27 +156,9 @@
 
 .entry-motion[data-ready] .entry-motion-dot { opacity: 1; }
 
-.entry-motion-dot::after {
-  position: absolute;
-  inset: -5px;
-  border: 1px solid #8ff7df;
-  border-radius: inherit;
-  content: "";
-  opacity: 0;
-}
-
-.entry-motion[data-running] .entry-motion-dot::after {
-  animation: entry-pulse 1.8s ease-out infinite;
-}
-
-@keyframes entry-pulse {
-  0% { opacity: .8; transform: scale(.55); }
-  78%, 100% { opacity: 0; transform: scale(2.2); }
-}
-
 .entry-access {
   min-width: 0;
-  padding: clamp(24px, 4.2vw, 62px);
+  padding: clamp(18px, 4svh, 42px) clamp(24px, 4.2vw, 62px);
   align-self: center;
 }
 
@@ -203,7 +173,7 @@
 .portal-entry .entry-access .role-grid {
   grid-template-columns: minmax(0, 1fr);
   gap: 9px;
-  margin: 24px 0 0;
+  margin: 16px 0 0;
 }
 
 .portal-entry .entry-access .role-card {
@@ -212,7 +182,7 @@
   grid-template-columns: 52px minmax(0, 1fr) 28px;
   justify-items: start;
   gap: 13px;
-  min-height: 70px;
+  min-height: 50px;
   padding: 7px 14px 7px 8px;
   border-radius: 14px;
   background: #f7fafb;
@@ -269,10 +239,10 @@
 @media (max-width: 760px) {
   .portal-entry .shell {
     width: calc(100% - 28px);
-    padding: calc(8px + env(safe-area-inset-top)) 0 24px;
+    padding: calc(5px + env(safe-area-inset-top)) 0 calc(6px + env(safe-area-inset-bottom));
   }
 
-  .portal-entry .shell > .entry-header { min-height: 58px; }
+  .portal-entry .shell > .entry-header { min-height: 46px; }
   .portal-entry .entry-header .logo { width: 138px; }
 
   .portal-entry .shell > .entry-frame {
@@ -282,16 +252,17 @@
     border-radius: 22px;
   }
 
-  .entry-intro { min-height: 196px; padding: 24px; }
-  .entry-copy h1 { font-size: clamp(48px, 10vw, 72px); }
-  .entry-copy p { max-width: 23ch; margin-top: 13px; font-size: 14px; }
-  .entry-motion { margin-top: 16px; }
+  .entry-intro { padding: 16px; }
+  .entry-copy h1 { font-size: clamp(38px, 9vw, 58px); }
+  .entry-copy h1 span { display: inline; margin-inline-start: .19em; }
+  .entry-copy p { max-width: none; margin-top: 8px; font-size: 13px; }
+  .entry-motion { margin-top: 10px; }
   .entry-motion-head { padding: 9px 11px 0; }
-  .entry-motion-plot { height: 64px; }
-  .entry-access { padding: 22px 16px; }
-  .portal-entry .entry-access .role-grid { margin-top: 15px; }
-  .portal-entry .entry-access .role-card { min-height: 56px; grid-template-columns: 42px minmax(0, 1fr) 26px; gap: 10px; }
-  .portal-entry .entry-access .role-card img { width: 42px; height: 42px; }
+  .entry-motion-plot { height: 50px; }
+  .entry-access { padding: 14px; }
+  .portal-entry .entry-access .role-grid { margin-top: 10px; gap: 5px; }
+  .portal-entry .entry-access .role-card { min-height: 44px; grid-template-columns: 32px minmax(0, 1fr) 26px; gap: 8px; padding-block: 4px; }
+  .portal-entry .entry-access .role-card img { width: 32px; height: 32px; }
   .portal-entry .entry-access .role-card strong { font-size: 14px; }
   .portal-entry .entry-access .role-card::after { width: 26px; height: 26px; }
 }
