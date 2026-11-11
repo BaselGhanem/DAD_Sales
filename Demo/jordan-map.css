@@ -21,3 +21,6 @@
 .jmap-popup button{margin-top:3px;background:#087f83;color:white;border:0}
 .jmap-stage .maplibregl-popup-content{border-radius:14px}
 @media(max-width:600px){.jmap-map{height:430px}.jmap-actions{width:100%}.jmap-actions select{flex:1 1 100%}.jmap-panel .section-head{align-items:flex-start}}
+.jmap-hover,.jmap-hover *{pointer-events:none!important}
+.jmap-stage .jmap-hover .maplibregl-popup-content{background:#fbfffe;border:1px solid #cee9e6;box-shadow:0 10px 28px #193b482b}
+.jmap-hover .jmap-popup strong{overflow-wrap:anywhere}

@@ -82,30 +82,46 @@ window.JordanSalesMap = (() => {
     const terrainButton = host.querySelector(`.jmap-terrain`);
     const {normalize,forCustomer,verifiedLocation} = window.JordanMapLocations;
     const chainArea = normalize(`آخرين`);
-    let map, popup, geography, ready = false, loaded = false, failed = false, terrain = true, clients = [];
+    let map, popup, hover, hoveredFeature, geography, ready = false, loaded = false, failed = false, terrain = true, clients = [];
     let elevationErrors = 0;
-    let focusKey, mapped = [], selectedAreas = [], governorateSales = new Map();
+    let focusKey, mapped = [], governorateSales = new Map();
 
-    const fit = points => {
-      const target = points.length ? points.reduce((box,p)=>box.extend(p.geometry.coordinates),new maplibregl.LngLatBounds()) : bounds;
-      map.fitBounds(target,{padding:mapHost.clientWidth<480?45:72,maxZoom:13,
-        duration:reduceMotion?0:800,pitch:terrain?50:0,bearing:terrain?-13:0});
-    };
+    function visibleBounds() {
+      return mapped.length ? mapped.reduce((box,feature)=>box.extend(feature.geometry.coordinates),
+        new maplibregl.LngLatBounds()) : null;
+    }
+
+    function fit(target, animate = true) {
+      if (!target) return;
+      map.fitBounds(target,{padding:mapHost.clientWidth<480?48:76,maxZoom:14,
+        duration:animate&&!reduceMotion?650:0,pitch:terrain?36:0,bearing:0});
+    }
+
+    function clearHover() {
+      hover?.remove();
+      hoveredFeature=undefined;
+      map.getCanvas().style.cursor=``;
+    }
 
     function updateMap() {
       if (!ready) return;
+      clearHover();
       map.getSource(`customers`).setData(empty(mapped));
       popup?.remove();
-      const areas = [...new Set(mapped.map(f=>f.properties.area))].sort();
-      const key = JSON.stringify([selectedAreas,areas]);
+      status.hidden=!!mapped.length;
+      status.textContent=`No mapped customers match the current filters.`;
+      reset.disabled=!mapped.length;
+      const target=visibleBounds();
+      const key=JSON.stringify(target?.toArray() ?? []);
       const scale = Math.max(1,...Array.from(governorateSales.values(),Math.abs));
-      map.getSource(`governorates`).setData(empty([...geography.values()].map(feature=>{
-        const net = governorateSales.get(feature.properties.shapeName) || 0;
-        return {...feature,properties:{...feature.properties,salesIntensity:Math.sign(net)*Math.sqrt(Math.abs(net)/scale)}};
-      })));
+      map.getSource(`governorates`).setData(empty([...geography.values()]
+        .filter(feature=>governorateSales.has(feature.properties.shapeName)).map(feature=>{
+          const net = governorateSales.get(feature.properties.shapeName);
+          return {...feature,properties:{...feature.properties,salesIntensity:Math.sign(net)*Math.sqrt(Math.abs(net)/scale)}};
+        })));
       if (key!==focusKey) {
+        fit(target,focusKey!==undefined);
         focusKey=key;
-        fit(selectedAreas.length || new Set(mapped.map(f=>f.properties.governorate)).size===1 ? mapped : []);
       }
     }
 
@@ -174,16 +190,16 @@ window.JordanSalesMap = (() => {
         geography = new Map(boundary.features.map(f=>[f.properties.shapeName,f]));
         syncClients();
         map = new maplibregl.Map({
-          container:mapHost, bounds, fitBoundsOptions:{padding:45}, minZoom:4.8,maxZoom:16,
+          container:mapHost, bounds:visibleBounds() || bounds, fitBoundsOptions:{padding:45,maxZoom:14}, minZoom:4.8,maxZoom:16,
           maxBounds:[[33.5,27.9],[41,34.6]],renderWorldCopies:false,scrollZoom:false,
-          pitch:50,bearing:-13,
+          pitch:36,bearing:0,
           style:{version:8,glyphs:`https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf`,
             sources:{
               elevation:{type:`raster-dem`,tiles:[`https://tiles.mapterhorn.com/{z}/{x}/{y}.webp`],
                 encoding:`terrarium`,tileSize:512,maxzoom:12,attribution:`<a href="https://mapterhorn.com/attribution">© Mapterhorn</a>`},
               basemap:{type:`vector`,url:`https://tiles.openfreemap.org/planet`},
               governorates:{type:`geojson`,data:boundary,attribution:`<a href="https://www.geoboundaries.org/">geoBoundaries / Wikimedia · CC BY 2.5</a>`},
-              customers:{type:`geojson`,data:empty([]),cluster:true,clusterMaxZoom:12,clusterRadius:47}
+              customers:{type:`geojson`,data:empty([]),cluster:true,clusterMaxZoom:12,clusterRadius:42,clusterProperties:{net:[`+`,[`get`,`net`]]}}
             },
             layers:[
               {id:`base`,type:`background`,paint:{[`background-color`]:`#dce6e3`}},
@@ -231,17 +247,17 @@ window.JordanSalesMap = (() => {
         });
         map.once(`load`,()=>{
           ready=true;
-          status.hidden=true;
           if (terrain) map.setTerrain({source:`elevation`,exaggeration:1.35});
-          reset.disabled=false;
           terrainButton.disabled=!terrain;
           updateMap();
         });
         map.on(`click`,`clusters`,async event=>{
+          clearHover();
           const cluster=event.features[0], zoom=await map.getSource(`customers`).getClusterExpansionZoom(cluster.properties.cluster_id).catch(()=>null);
           if (zoom!==null) map.easeTo({center:cluster.geometry.coordinates,zoom,duration:reduceMotion?0:500});
         });
         map.on(`click`,`accounts`,event=>{
+          clearHover();
           const feature=event.features[0], client=feature.properties;
           const content=element(`div`,null,`jmap-popup`);
           content.append(element(`strong`,client.name),element(`small`,client.area),
@@ -260,10 +276,35 @@ window.JordanSalesMap = (() => {
           popup?.remove();
           popup=new maplibregl.Popup({offset:12,maxWidth:`250px`}).setLngLat(feature.geometry.coordinates).setDOMContent(content).addTo(map);
         });
-        for (const layer of [`accounts`,`clusters`]) {
-          map.on(`mouseenter`,layer,()=>{map.getCanvas().style.cursor=`pointer`});
-          map.on(`mouseleave`,layer,()=>{map.getCanvas().style.cursor=``});
-        }
+        hover=new maplibregl.Popup({className:`jmap-hover`,closeButton:false,closeOnClick:false,
+          focusAfterOpen:false,offset:13,maxWidth:`240px`});
+        map.on(`mousemove`,event=>{
+          const feature=map.queryRenderedFeatures(event.point,{layers:[`accounts`,`clusters`]})[0];
+          if (!feature || popup?.isOpen() || map.isMoving()) {
+            clearHover();
+            return;
+          }
+          const data=feature.properties;
+          const key=JSON.stringify([data.cluster_id,data.customer,data.area]);
+          if (key!==hoveredFeature) {
+            const content=element(`div`,null,`jmap-popup`);
+            if (data.cluster) {
+              content.append(element(`strong`,`${fmt.format(data.point_count)} customer locations`),
+                element(`span`,`Net sales · ${fmt.format(data.net)}`),element(`small`,`Click to zoom in`));
+            } else {
+              content.append(element(`strong`,data.name),element(`small`,data.area),
+                element(`span`,`Net sales · ${fmt.format(data.net)}`),
+                element(`small`,data.source?`Published location`:`Illustrative location`));
+            }
+            hover.setDOMContent(content);
+            hoveredFeature=key;
+          }
+          hover.setLngLat(event.lngLat);
+          if (!hover.isOpen()) hover.addTo(map);
+          map.getCanvas().style.cursor=`pointer`;
+        });
+        map.getCanvas().addEventListener(`mouseleave`,clearHover);
+        map.on(`movestart`,clearHover);
       } catch {
         failed=true;
         syncClients();
@@ -271,13 +312,13 @@ window.JordanSalesMap = (() => {
       }
     }
 
-    reset.onclick=()=>fit([]);
+    reset.onclick=()=>fit(visibleBounds());
     terrainButton.onclick=()=>{
       terrain=!terrain;
       map.setTerrain(terrain?{source:`elevation`,exaggeration:1.35}:null);
       terrainButton.textContent=terrain?`3D terrain`:`2D view`;
       terrainButton.setAttribute(`aria-pressed`,String(terrain));
-      map.easeTo({pitch:terrain?50:0,bearing:terrain?-13:0,duration:reduceMotion?0:450});
+      map.easeTo({pitch:terrain?36:0,bearing:0,duration:reduceMotion?0:450});
     };
 
     const observer = new IntersectionObserver(entries=>{
@@ -289,7 +330,7 @@ window.JordanSalesMap = (() => {
 
     return {
       update(rows, selected, allowedAreas) {
-        selectedAreas=[...selected].sort();
+        const selectedAreas=[...selected].sort();
         const areaTotals=new Map(), grouped=new Map();
         for (const row of rows) {
           areaTotals.set(row.area,(areaTotals.get(row.area)||0)+row.value);
@@ -299,7 +340,7 @@ window.JordanSalesMap = (() => {
           grouped.set(key,client);
         }
         clients=[...grouped.values()].sort((a,b)=>b.net-a.net);
-        const clear=element(`option`,`All areas`);
+        const clear=element(`option`,`All matching areas`);
         clear.value=``;
         areaPicker.replaceChildren(clear,...allowedAreas.map(area=>{
           const option=element(`option`,area);
