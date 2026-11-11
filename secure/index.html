@@ -14,10 +14,9 @@ h1{margin:0;font-size:clamp(28px,5vw,42px);line-height:1.1}header p{margin:7px 0
 a{color:var(--teal);text-underline-offset:4px}header a{color:#e0fbf7;font-size:14px}
 .tools,.person{background:white;border:1px solid var(--line);border-radius:16px}
 .tools{margin:14px 0;padding:16px;display:flex;align-items:center;flex-wrap:wrap;gap:10px}
-button,input,.pick{font:inherit}button,.pick{cursor:pointer;border:1px solid #cce4e2;border-radius:9px;background:var(--tint);color:var(--teal);font-size:13px;font-weight:700;padding:7px 10px;min-height:40px;white-space:nowrap}
-.pick{display:inline-flex;align-items:center;background:var(--teal);color:white}
-button:hover{border-color:var(--teal)}:focus-visible,.pick:focus-within{outline:2px solid #099999;outline-offset:3px}
-input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
+button,input{font:inherit}button{cursor:pointer;border:1px solid #cce4e2;border-radius:9px;background:var(--tint);color:var(--teal);font-size:13px;font-weight:700;padding:7px 10px;min-height:40px;white-space:nowrap}
+#refresh{background:var(--teal);color:white}button:disabled{opacity:.55;cursor:default}
+button:hover{border-color:var(--teal)}:focus-visible{outline:2px solid #099999;outline-offset:3px}
 input[type=search]{flex:1 1 220px;min-width:0;min-height:42px;padding:8px 12px;border:1px solid var(--line);border-radius:9px;color:var(--ink)}
 #count,#status{font-size:14px;color:var(--muted)}#status{min-height:1.6em;margin:10px 3px}
 #results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:12px}
@@ -35,12 +34,11 @@ dt{font-size:12px;color:var(--muted)}dd{margin:0;font-size:15px;overflow-wrap:an
     <a href="https://github.com/BaselGhanem/DAD_Sales/blob/main/credentials.csv" target="_blank" rel="noopener noreferrer" dir="ltr">credentials.csv</a>
   </header>
   <section class="tools" aria-label="تحميل وبحث">
-    <label class="pick">اختيار ملف CSV<input id="csv" type="file" accept=".csv,text/csv"></label>
+    <button id="refresh" type="button">تحديث البيانات</button>
     <input id="search" type="search" placeholder="ابحث بالاسم او المستخدم او الفريق" aria-label="بحث" hidden>
-    <button id="clear" type="button" hidden>مسح البيانات</button>
     <span id="count"></span>
   </section>
-  <p id="status" role="status">نزل الملف من الرابط فوق واختره من جهازك</p>
+  <p id="status" role="status">جاري تحميل الحسابات من GitHub</p>
   <div id="results"></div>
 </main>
 <script>
@@ -52,13 +50,12 @@ const fields = [
   [`Team`, `الفريق`]
 ];
 const byId = id => document.getElementById(id);
-const fileInput = byId(`csv`);
+const refresh = byId(`refresh`);
+const source = `https://raw.githubusercontent.com/BaselGhanem/DAD_Sales/main/credentials.csv`;
 const search = byId(`search`);
-const clearButton = byId(`clear`);
 const results = byId(`results`);
 const status = byId(`status`);
 let users = [];
-let importVersion = 0;
 
 function parseCSV(source) {
   const text = source.replace(/^\uFEFF/, ``);
@@ -159,37 +156,28 @@ function render() {
   byId(`count`).textContent = users.length ? `${visible.length} / ${users.length} حساب` : ``;
 }
 
-fileInput.addEventListener(`change`, async () => {
-  const file = fileInput.files[0];
-  if (!file) return;
-  const version = ++importVersion;
-  search.value = ``;
-  users = [];
-  render();
-  search.hidden = true;
-  clearButton.hidden = false;
-  status.textContent = `جاري قراءة الملف`;
+async function loadAccounts() {
+  refresh.disabled = true;
+  status.textContent = `جاري تحميل الحسابات من GitHub`;
   try {
-    const parsed = parseCSV(await file.text());
-    if (version !== importVersion) return;
-    users = parsed;
+    const response = await fetch(source, {cache: `no-store`, credentials: `omit`});
+    if (!response.ok) throw new Error(`GitHub ${response.status}`);
+    users = parseCSV(await response.text());
     search.hidden = !users.length;
+    render();
     status.textContent = users.length ? `اختر الخلية اللي بدك تنسخها` : `الملف ما فيه حسابات`;
-  } catch (error) {
-    if (version !== importVersion) return;
-    status.textContent = error.message;
+  } catch {
+    status.textContent = users.length
+      ? `تعذر التحديث من GitHub، البيانات المعروضة من اخر تحميل ناجح`
+      : `تعذر تحميل الحسابات من GitHub، جرب زر تحديث البيانات`;
+  } finally {
+    refresh.disabled = false;
   }
-  render();
-});
+}
+
 search.addEventListener(`input`, render);
-clearButton.addEventListener(`click`, () => {
-  importVersion++;
-  users = [];
-  fileInput.value = search.value = ``;
-  search.hidden = clearButton.hidden = true;
-  status.textContent = `تم مسح البيانات من الصفحة`;
-  render();
-});
+refresh.addEventListener(`click`, loadAccounts);
+loadAccounts();
 </script>
 </body>
 </html>
