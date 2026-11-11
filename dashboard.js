@@ -67,7 +67,21 @@ $(`repName`).textContent=businessUnit||countryManager?user.name:supervisor?`${us
 
 Chart.defaults.font.family=`Segoe UI, Almarai, Arial, sans-serif`;Chart.defaults.color=`#526c7b`;Chart.defaults.font.size=14;
 document.querySelectorAll(`[data-period]`).forEach(b=>b.onclick=()=>setPeriod(b.dataset.period));for(const id of [`from`,`to`])$(id).onchange=()=>{period=`custom`;document.querySelectorAll(`[data-period]`).forEach(b=>b.classList.toggle(`active`,b.dataset.period===period));render()};$(`clear`).onclick=()=>{for(const key of Object.keys(filters))filters[key].clear();render()};$(`productLevel`).onchange=()=>renderCharts(current);$(`prev`).onclick=()=>{page--;renderTable(current)};$(`next`).onclick=()=>{page++;renderTable(current)};document.addEventListener(`click`,e=>{for(const detail of document.querySelectorAll(`details[open]`))if(!detail.contains(e.target))detail.open=false});document.addEventListener(`keydown`,e=>{if(e.key===`Escape`)for(const detail of document.querySelectorAll(`details[open]`))detail.open=false});$(`logout`).onclick=()=>{localStorage.removeItem(`dad_sales_session_v1`);sessionStorage.removeItem(`dad_sales_session_v1`);location.replace(`index.html`)};
-window.SalesOpportunities.init({rows:loaded.opportunityRows,ownRows:rows,latest});window.CustomerProfiles.init({rows:loaded.opportunityRows,ownRows:rows,latest});$(`dashboard`).hidden=false;setPeriod(`month`);
+const opportunityProfileContext=window.SalesOpportunities.init({rows:loaded.opportunityRows,ownRows:rows,latest});
+window.CustomerProfiles.init({
+ rows:loaded.opportunityRows, ownRows:rows, latest,
+ getContext(target) {
+  if(target.closest(`#opportunities`))return opportunityProfileContext();
+  const selected=Object.fromEntries(Object.entries(filters).map(([key,values])=>[key,new Set(values)]));
+  const {month,item,group,...portfolioFilters}=selected;
+  return {
+   from:$(`from`).value,to:$(`to`).value,months:month,
+   matchesPortfolio:row=>S.match(row,portfolioFilters),
+   matchesItem:row=>(!item.size||item.has(row.item))&&(!group.size||group.has(row.group)),
+   matchesArea:row=>!selected.area.size||selected.area.has(row.area)
+  };
+ }
+});$(`dashboard`).hidden=false;setPeriod(`month`);
 }catch(error){$(`error`).hidden=false;$(`errorText`).textContent=error.message||`Please try again.`}
 finally{
  await new Promise(resolve=>requestAnimationFrame(resolve));

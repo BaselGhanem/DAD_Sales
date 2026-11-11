@@ -21,6 +21,7 @@ function priorities(rows,owned,selected,areas,from,to){
 }
 window.OpportunityMath={compute,priorities,territoryScope};
 window.SalesOpportunities={init({rows,ownRows,latest}){
+ let profileContext;
  const owned=[...new Set(ownRows.map(r=>r.item))].sort((a,b)=>a.localeCompare(b)),allAreas=[...new Set(ownRows.map(r=>r.area))].sort((a,b)=>a.localeCompare(b,`en`));let selectedUnits=new Set(),selectedSupervisors=new Set(),selectedTeams=new Set(),selectedReps=new Set(),allowedItems=new Set(owned),priorityMode=false,areas=new Set(),selectedItems=new Set(),periodMode=`year`,page=1,current=[];const from=$(`oppFrom`),to=$(`oppTo`),item=$(`oppItem`);
  const group=$(`oppGroup`),query=$(`oppCustomerSearch`),minValue=$(`oppMinValue`),maxValue=$(`oppMaxValue`),minMissing=$(`oppMinMissing`);
  for(const value of [...new Set(ownRows.map(r=>r.group))].sort((a,b)=>a.localeCompare(b)))group.add(new Option(value,value));
@@ -58,6 +59,16 @@ window.SalesOpportunities={init({rows,ownRows,latest}){
  allowedItems=new Set(scopeItems);
  const companyScope=rows.filter(r=>territory.areas.has(r.area));
  for(const value of [...selectedItems])if(!scopeItems.includes(value))selectedItems.delete(value);
+ const profileItems=new Set(selectedItems.size?selectedItems:scopeItems);
+ const profileGroup=group.value,profileAreas=new Set(areas);
+ const profilePortfolio=new Set(scopedOwn);
+ profileContext={
+  from:from.value,to:to.value,months:new Set(),
+  matchesPortfolio:row=>profilePortfolio.has(row)&&(!profileAreas.size||profileAreas.has(row.area)),
+  matchesItem:row=>profileItems.has(row.item)&&(!profileGroup||row.group===profileGroup),
+  matchesArea:row=>territory.areas.has(row.area)&&(!profileAreas.size||profileAreas.has(row.area)),
+  otherExclusion:priorityMode?undefined:profileItems
+ };
  const allowed=new Set(scopeItems);
  for(const label of itemOptions.children){const radio=label.querySelector(`input`);label.hidden=!!radio.value&&!allowed.has(radio.value)||!label.dataset.search.includes($(`oppItemSearch`).value.toLocaleLowerCase())}
  const low=minValue.value===``?0:Number(minValue.value),high=maxValue.value===``?Infinity:Number(maxValue.value);
@@ -71,5 +82,6 @@ KpiCounter.set(`oppCount`,current.length);KpiCounter.set(`oppValue`,current.redu
  $(`oppMonth`).onclick=()=>{periodMode=`month`;from.value=`${latest.slice(0,7)}-01`;to.value=latest;render()};$(`oppYear`).onclick=()=>{periodMode=`year`;from.value=`${latest.slice(0,4)}-01-01`;to.value=`${latest.slice(0,4)}-12-31`;render()};$(`oppClear`).onclick=()=>{selectedUnits.clear();selectedSupervisors.clear();for(const id of [`oppUnitSearch`,`oppSupervisorSearch`])if($(id))$(id).value=``;selectedTeams.clear();selectedReps.clear();$(`oppTeamSearch`).value=``;$(`oppRepSearch`).value=``;areas.clear();selectedItems.clear();item.value=``;group.value=``;query.value=``;minValue.value=``;maxValue.value=``;minMissing.value=``;$(`oppAreaSearch`).value=``;$(`oppItemSearch`).value=``;for(const label of [...options.children,...itemOptions.children])label.hidden=false;for(const box of options.querySelectorAll(`input`))box.checked=false;render()};$(`oppPrev`).onclick=()=>{page--;table()};$(`oppNext`).onclick=()=>{page++;table()};
  function tab(name){const opportunity=name===`opportunities`||name===`priorities`;priorityMode=name===`priorities`;$(`salesView`).hidden=opportunity;$(`opportunities`).hidden=!opportunity;document.querySelectorAll(`[data-tab]`).forEach(b=>{const active=b.dataset.tab===name;b.classList.toggle(`active`,active);b.setAttribute(`aria-pressed`,`${active}`)});if(opportunity)render()}
  document.querySelectorAll(`[data-tab]`).forEach(b=>b.addEventListener(`click`,()=>tab(b.dataset.tab)));document.querySelectorAll(`.mobile-nav [data-section]`).forEach(b=>b.addEventListener(`click`,()=>tab(`sales`),true));
+ return () => profileContext;
 }};
 })();
