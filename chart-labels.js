@@ -18,10 +18,13 @@
         const dense = !horizontal && dataset.data.length > 12;
         const mobile = width < 500;
         ctx.font = `700 ${dense ? (mobile ? 13 : 14) : mobile ? 14 : 16}px Segoe UI, Almarai, Arial, sans-serif`;
-        ctx.fillStyle = `#123b55`;
+        ctx.fillStyle = dataset.valueLabelColor ?? `#123b55`;
         ctx.strokeStyle = `rgba(255,255,255,0.96)`;
         ctx.lineWidth = 3;
         ctx.lineJoin = `round`;
+        const reference = dataset.avoidLabelOverlapWith;
+        const referencePoints = !horizontal && Number.isInteger(reference) && chart.isDatasetVisible(reference)
+          ? chart.getDatasetMeta(reference).data : [];
         meta.data.forEach((element, index) => {
           const raw = dataset.data[index];
           const value = typeof raw === `number` ? raw : Number(raw?.[horizontal ? `x` : `y`]);
@@ -30,6 +33,13 @@
           if (!Number.isFinite(x) || !Number.isFinite(y)) return;
           const text = number.format(value);
           const textWidth = ctx.measureText(text).width;
+          const referencePoint = referencePoints[index];
+          let labelY = y;
+          if (referencePoint && !referencePoint.skip) {
+            const referenceY = referencePoint.tooltipPosition().y;
+            const separation = dense ? Math.max(textWidth, ctx.measureText(number.format(chart.data.datasets[reference].data[index])).width) + 5 : 20;
+            if (Number.isFinite(referenceY) && Math.abs(y - referenceY) < separation) labelY = referenceY - separation;
+          }
           ctx.save();
           if (horizontal) {
             const negative = value < 0;
@@ -38,12 +48,12 @@
             const labelX = negative ? Math.max(textWidth + 4, x - 7) : Math.min(width - textWidth - 4, x + 7);
             ctx.translate(labelX, Math.max(8, Math.min(height - 8, y)));
           } else if (dense) {
-            ctx.translate(Math.max(9, Math.min(width - 9, x)), Math.max(textWidth + 6, Math.min(height - 6, y - 9)));
+            ctx.translate(Math.max(9, Math.min(width - 9, x)), Math.max(textWidth + 6, Math.min(height - 6, labelY - 9)));
             ctx.rotate(-Math.PI / 2);
             ctx.textAlign = `left`;
             ctx.textBaseline = `middle`;
           } else {
-            ctx.translate(Math.max(textWidth / 2 + 4, Math.min(width - textWidth / 2 - 4, x)), Math.max(15, Math.min(height - 8, y - 10)));
+            ctx.translate(Math.max(textWidth / 2 + 4, Math.min(width - textWidth / 2 - 4, x)), Math.max(15, Math.min(height - 8, labelY - 10)));
             ctx.textAlign = `center`;
             ctx.textBaseline = `bottom`;
           }
