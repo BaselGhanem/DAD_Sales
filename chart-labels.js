@@ -13,7 +13,7 @@
       const horizontal = chart.options.indexAxis === `y`;
       ctx.save();
       chart.data.datasets.forEach((dataset, datasetIndex) => {
-        if (!chart.isDatasetVisible(datasetIndex)) return;
+        if (dataset.showValueLabels === false || !chart.isDatasetVisible(datasetIndex)) return;
         const meta = chart.getDatasetMeta(datasetIndex);
         const dense = !horizontal && dataset.data.length > 12;
         const mobile = width < 500;
