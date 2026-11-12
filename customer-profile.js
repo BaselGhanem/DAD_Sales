@@ -97,12 +97,12 @@ window.CustomerProfiles={init({rows,ownRows,latest,getContext,missingOnly=false}
     labels:keys.map(value=>daily?value.slice(8,10):`${value.slice(5,7)}-${value.slice(0,4)}`),
     datasets:[
      {label:`Your items`,data:keys.map(key=>ownByPeriod.get(key)??0),borderColor:`#099999`,backgroundColor:`#09999915`,order:1,fill:true,tension:.3,pointRadius:3},
-     {label:`Company total`,data:keys.map(key=>companyByPeriod.get(key)??0),borderColor:`#6557a6`,backgroundColor:`#6557a610`,order:2,fill:true,tension:.3,pointRadius:3,showValueLabels:false}
+     {label:`Company total`,data:keys.map(key=>companyByPeriod.get(key)??0),borderColor:`#6557a6`,backgroundColor:`#6557a610`,order:2,fill:true,tension:.3,pointRadius:3,valueLabelColor:`#6557a6`,avoidLabelOverlapWith:0}
     ]
    },
    options:{
     responsive:true,maintainAspectRatio:false,interaction:{mode:`index`,intersect:false},
-    layout:{padding:{top:18,left:14,right:22}},
+    layout:{padding:{top:36,left:14,right:22}},
     animation:matchMedia(`(prefers-reduced-motion: reduce)`).matches?false:{duration:600},
     plugins:{
      legend:{display:true,labels:{usePointStyle:true,boxWidth:10,font:{size:mobile?12:14}}},
