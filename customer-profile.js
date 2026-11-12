@@ -12,7 +12,8 @@ function calculate(company,ownRows,customer,from,to,context){
  const inPeriod=row=>row.date>=from&&row.date<=to&&(!context.months.size||context.months.has(row.month));
  const own=clientOwn.filter(inPeriod);
  const exclusions=context.otherExclusion||portfolio;
- const other=company.filter(row=>row.customer===customer&&context.matchesArea(row)&&inPeriod(row)&&!exclusions.has(row.item));
+ const companySales=company.filter(row=>row.customer===customer&&context.matchesArea(row)&&inPeriod(row));
+ const other=companySales.filter(row=>!exclusions.has(row.item));
  const otherValue=S.sum(other);
  const firstSelectedMonth=[...context.months].filter(month=>month>=from.slice(0,7)&&month<=to.slice(0,7)).sort()[0];
  const historyEnd=firstSelectedMonth&&firstSelectedMonth>from.slice(0,7)?`${firstSelectedMonth}-01`:from;
@@ -25,7 +26,7 @@ function calculate(company,ownRows,customer,from,to,context){
   status:(currentUnits.get(item)||0)>0?`active`:(previousUnits.get(item)||0)>0?`stopped`:`missing`
  }));
  const last=own.reduce((latest,row)=>row.units>0&&row.value>0&&row.date>latest?row.date:latest,``);
- return {own,other,otherValue,net:S.sum(own),units:S.sum(own,`units`),last,products};
+ return {own,other,companySales,otherValue,net:S.sum(own),units:S.sum(own,`units`),last,products};
 }
 window.CustomerProfileMath={calculate};
 window.CustomerProfiles={init({rows,ownRows,latest,getContext,missingOnly=false}){
@@ -72,7 +73,47 @@ window.CustomerProfiles={init({rows,ownRows,latest,getContext,missingOnly=false}
  }
  function render(){for(const [id,period] of [[`profileMonth`,`month`],[`profileYear`,`year`]]){$(id).classList.toggle(`active`,profilePeriod===period);$(id).setAttribute(`aria-pressed`,`${profilePeriod===period}`)}if(!from.value||!to.value||from.value>to.value){$(`profileStatus`).textContent=`Select a valid date range.`;return}$(`profileStatus`).textContent=``;page=otherPage=1;model=calculate(rows,ownRows,customer,from.value,to.value,context);KpiCounter.set(`profileNet`,model.net);if(model.products.length===1||new Set(model.own.map(r=>r.item)).size===1)KpiCounter.set(`profileUnits`,model.units);else KpiCounter.text(`profileUnits`,`Please select one SKU`);$(`profileLast`).textContent=date(model.last);KpiCounter.set(`profileOther`,model.otherValue);renderOtherDetails();
  for(const [status,id] of [[`active`,`profileActive`],[`stopped`,`profileStopped`],[`missing`,`profileMissing`]]){const list=status===`missing`?missingProducts(customer,from.value,to.value,inheritedContext):model.products.filter(p=>p.status===status),host=$(id);host.replaceChildren();if(!list.length){host.textContent=`No items found.`;continue}for(const product of list){const entry=document.createElement(`div`);entry.className=`profile-product`;const title=document.createElement(`strong`);title.textContent=product.item;entry.append(title);if(status===`active`){const text=document.createElement(`span`);text.textContent=`Net sales ${fmt(product.value)} · Units ${fmt(product.units)}`;entry.append(text)}host.append(entry)}}
- const daily=from.value.slice(0,7)===to.value.slice(0,7);const months=new Map();for(let d=new Date(`${daily?from.value:`${from.value.slice(0,7)}-01`}T00:00:00Z`);S.iso(d)<=to.value;daily?d.setUTCDate(d.getUTCDate()+1):d.setUTCMonth(d.getUTCMonth()+1)){const iso=S.iso(d);if(!context.months.size||context.months.has(iso.slice(0,7)))months.set(iso.slice(0,daily?10:7),0);}for(const r of model.own){const key=daily?r.date:r.month;months.set(key,(months.get(key)||0)+r.value)}$(`profileTrend`).closest(`.panel`).querySelector(`h2`).textContent=daily?`Daily sales of your items · ${from.value.slice(5,7)}-${from.value.slice(0,4)}`:`Monthly sales of your items`;if(chart)chart.destroy();chart=new Chart($(`profileTrend`),{type:`line`,data:{labels:[...months.keys()].map(value=>daily?value.slice(8,10):`${value.slice(5,7)}-${value.slice(0,4)}`),datasets:[{label:`Net sales`,data:[...months.values()],borderColor:`#099999`,backgroundColor:`#09999915`,fill:true,tension:.3,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:65,left:14,right:22}},animation:matchMedia(`(prefers-reduced-motion: reduce)`).matches?false:{duration:600},plugins:{legend:{display:false},tooltip:{titleFont:{size:14,weight:`700`},bodyFont:{size:14},padding:12}},scales:{y:{beginAtZero:true,ticks:{font:{size:matchMedia(`(max-width:680px)`).matches?12:14},padding:8}},x:{offset:months.size===1,grid:{display:false},ticks:{autoSkip:false,minRotation:!daily&&months.size>12?65:0,maxRotation:daily?0:90,font:{size:matchMedia(`(max-width:680px)`).matches?12:14},padding:8}}}}});PremiumTooltip.bind(chart,{rows:model.own,key:daily?`date`:`month`,keys:[...months.keys()],titles:[...months.keys()].map(value=>daily?value.split(`-`).reverse().join(`-`):`${value.slice(5,7)}-${value.slice(0,4)}`),period:`${date(from.value)} — ${date(to.value)}`});renderTable();
+  renderTrend();
+  renderTable();
+ }
+ function renderTrend(){
+  const start=from.value,end=to.value,daily=start.slice(0,7)===end.slice(0,7);
+  const keys=[];
+  const cursor=new Date(`${daily?start:`${start.slice(0,7)}-01`}T00:00:00Z`);
+  for(;S.iso(cursor)<=end;daily?cursor.setUTCDate(cursor.getUTCDate()+1):cursor.setUTCMonth(cursor.getUTCMonth()+1)){
+   const iso=S.iso(cursor);
+   if(!context.months.size||context.months.has(iso.slice(0,7)))keys.push(iso.slice(0,daily?10:7));
+  }
+  const metric=daily?`date`:`month`;
+  const ownByPeriod=new Map(S.aggregate(model.own,metric));
+  const companyByPeriod=new Map(S.aggregate(model.companySales,metric));
+  const canvas=$(`profileTrend`);
+  canvas.closest(`.panel`).querySelector(`h2`).textContent=daily?`Daily sales · ${start.slice(5,7)}-${start.slice(0,4)}`:`Monthly sales`;
+  if(chart)chart.destroy();
+  const mobile=matchMedia(`(max-width:680px)`).matches;
+  chart=new Chart(canvas,{
+   type:`line`,
+   data:{
+    labels:keys.map(value=>daily?value.slice(8,10):`${value.slice(5,7)}-${value.slice(0,4)}`),
+    datasets:[
+     {label:`Your items`,data:keys.map(key=>ownByPeriod.get(key)??0),borderColor:`#099999`,backgroundColor:`#09999915`,order:1,fill:true,tension:.3,pointRadius:3},
+     {label:`Company total`,data:keys.map(key=>companyByPeriod.get(key)??0),borderColor:`#6557a6`,backgroundColor:`#6557a610`,order:2,fill:true,tension:.3,pointRadius:3,showValueLabels:false}
+    ]
+   },
+   options:{
+    responsive:true,maintainAspectRatio:false,interaction:{mode:`index`,intersect:false},
+    layout:{padding:{top:18,left:14,right:22}},
+    animation:matchMedia(`(prefers-reduced-motion: reduce)`).matches?false:{duration:600},
+    plugins:{
+     legend:{display:true,labels:{usePointStyle:true,boxWidth:10,font:{size:mobile?12:14}}},
+     tooltip:{enabled:true,external:null,titleFont:{size:14,weight:`700`},bodyFont:{size:14},padding:12}
+    },
+    scales:{
+     y:{beginAtZero:true,ticks:{font:{size:mobile?12:14},padding:8}},
+     x:{offset:keys.length===1,grid:{display:false},ticks:{autoSkip:false,minRotation:!daily&&keys.length>12?65:0,maxRotation:daily?0:90,font:{size:mobile?12:14},padding:8}}
+    }
+   }
+  });
  }
  document.addEventListener(`click`,event=>{const target=event.target.closest(`[data-profile-customer]`);if(!target)return;const id=target.dataset.profileCustomer;const inherited=getContext(target);if(!inherited)return;const client=rows.find(r=>r.customer===id&&inherited.matchesArea(r));if(!client)return;inheritedContext=inherited;context=missingOnly?unrestricted:inherited;opener=target;customer=id;$(`profileName`).textContent=client.customerName;from.value=inherited.from||`${latest.slice(0,4)}-01-01`;to.value=inherited.to||latest;$(`profileArea`).textContent=[...new Set(rows.filter(r=>r.customer===id&&context.matchesArea(r)).map(r=>r.area))].join(`, `);profilePeriod=from.value===`${latest.slice(0,7)}-01`&&to.value===latest?`month`:from.value===`${latest.slice(0,4)}-01-01`&&(to.value===latest||to.value===`${latest.slice(0,4)}-12-31`)?`year`:`custom`;dialog.showModal();document.body.classList.add(`profile-open`);render();$(`profileClose`).focus()});
  $(`profileClose`).onclick=()=>dialog.close();dialog.addEventListener(`close`,()=>{document.body.classList.remove(`profile-open`);if(chart){chart.destroy();chart=null}opener?.focus()});dialog.addEventListener(`click`,e=>{if(e.target===dialog)dialog.close()});from.onchange=to.onchange=()=>{profilePeriod=`custom`;render()};$(`profileYear`).onclick=()=>{profilePeriod=`year`;from.value=`${latest.slice(0,4)}-01-01`;to.value=latest;render()};$(`profileMonth`).onclick=()=>{profilePeriod=`month`;from.value=`${latest.slice(0,7)}-01`;to.value=latest;render()};$(`profilePrev`).onclick=()=>{page--;renderTable()};$(`profileNext`).onclick=()=>{page++;renderTable()};
