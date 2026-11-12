@@ -29,11 +29,18 @@ function calculate(company,ownRows,customer,from,to,context){
  return {own,other,companySales,otherValue,net:S.sum(own),units:S.sum(own,`units`),last,products};
 }
 window.CustomerProfileMath={calculate};
-window.CustomerProfiles={init({rows,ownRows,latest,getContext,missingOnly=false}){
+window.CustomerProfiles={init({rows,ownRows,latest,getContext,missingOnly=false,chronicComparison=false}){
  let customer,context,inheritedContext,chart,page=1,otherPage=1,model,opener,profilePeriod=`custom`;
  const dialog=$(`customerProfile`),from=$(`profileFrom`),to=$(`profileTo`);
  const date=d=>d?d.split(`-`).reverse().join(`/`):`—`;
  const otherDetails=$(`profileOtherDetails`);
+ if(chronicComparison){
+  $(`profileOther`).previousElementSibling.textContent=`Net purchases of other Chronic items`;
+  if(otherDetails){
+   otherDetails.querySelector(`summary`).textContent=`Other Chronic items · Sales details`;
+   $(`profileOtherEmpty`).textContent=`No transactions found for other Chronic items.`;
+  }
+ }
  const sortTransactions=rows=>[...rows].sort((a,b)=>b.date.localeCompare(a.date));
  function renderTransactions(rows,currentPage,{body,pageLabel,prev,next,count}){
   const pages=Math.max(1,Math.ceil(rows.length/25));
@@ -97,7 +104,7 @@ window.CustomerProfiles={init({rows,ownRows,latest,getContext,missingOnly=false}
     labels:keys.map(value=>daily?value.slice(8,10):`${value.slice(5,7)}-${value.slice(0,4)}`),
     datasets:[
      {label:`Your items`,data:keys.map(key=>ownByPeriod.get(key)??0),borderColor:`#099999`,backgroundColor:`#09999915`,order:1,fill:true,tension:.3,pointRadius:3},
-     {label:`Company total`,data:keys.map(key=>companyByPeriod.get(key)??0),borderColor:`#6557a6`,backgroundColor:`#6557a610`,order:2,fill:true,tension:.3,pointRadius:3,valueLabelColor:`#6557a6`,avoidLabelOverlapWith:0}
+     {label:chronicComparison?`Chronic total`:`Company total`,data:keys.map(key=>companyByPeriod.get(key)??0),borderColor:`#6557a6`,backgroundColor:`#6557a610`,order:2,fill:true,tension:.3,pointRadius:3,valueLabelColor:`#6557a6`,avoidLabelOverlapWith:0}
     ]
    },
    options:{

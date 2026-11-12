@@ -82,9 +82,14 @@ $(`repName`).textContent=businessUnit||countryManager?user.name:supervisor?`${us
 
 Chart.defaults.font.family=`Segoe UI, Almarai, Arial, sans-serif`;Chart.defaults.color=`#526c7b`;Chart.defaults.font.size=14;
 document.querySelectorAll(`[data-period]`).forEach(b=>b.onclick=()=>setPeriod(b.dataset.period));for(const id of [`from`,`to`])$(id).onchange=()=>{period=`custom`;document.querySelectorAll(`[data-period]`).forEach(b=>b.classList.toggle(`active`,b.dataset.period===period));render()};$(`clear`).onclick=()=>{for(const key of Object.keys(filters))filters[key].clear();render()};$(`productLevel`).onchange=()=>renderCharts(current);$(`prev`).onclick=()=>{page--;renderTable(current)};$(`next`).onclick=()=>{page++;renderTable(current)};document.addEventListener(`click`,e=>{for(const detail of document.querySelectorAll(`details[open]`))if(!detail.contains(e.target))detail.open=false});document.addEventListener(`keydown`,e=>{if(e.key===`Escape`)for(const detail of document.querySelectorAll(`details[open]`))detail.open=false});$(`logout`).onclick=()=>{localStorage.removeItem(`dad_sales_session_v1`);sessionStorage.removeItem(`dad_sales_session_v1`);location.replace(`index.html`)};
-const opportunityProfileContext=window.SalesOpportunities.init({rows:loaded.opportunityRows,ownRows:rows,latest});
+const chronicTeams=new Set([`cardio 1`,`cardio 2`,`cardio 3`,`cardio 4`]);
+const isChronicRow=row=>chronicTeams.has(row.team.toLowerCase().replace(/\s+/g,` `));
+const chronicComparison=pageRole===`chronic`||(pageRole===`rep`&&rows.some(isChronicRow));
+const comparisonRows=chronicComparison?loaded.opportunityRows.filter(isChronicRow):loaded.opportunityRows;
+const customerViewRows=chronicComparison?rows.filter(isChronicRow):rows;
+const opportunityProfileContext=window.SalesOpportunities.init({rows:comparisonRows,ownRows:customerViewRows,latest,chronicComparison});
 window.CustomerProfiles.init({
- rows:loaded.opportunityRows, ownRows:rows, latest, missingOnly:businessUnit||countryManager,
+ rows:comparisonRows, ownRows:customerViewRows, latest, chronicComparison, missingOnly:businessUnit||countryManager,
  getContext(target) {
   if(target.closest(`#opportunities`))return opportunityProfileContext();
   const selected=Object.fromEntries(Object.entries(filters).map(([key,values])=>[key,new Set(values)]));
