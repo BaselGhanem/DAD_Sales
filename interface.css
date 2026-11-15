@@ -400,3 +400,50 @@ body .customer-profile .presets button:is(.active,[aria-pressed="true"]) {
   outline: 2px solid #099999;
   outline-offset: 2px;
 }
+
+:is(#dashboard,.customer-profile) .sales-period-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+.sales-period-toolbar .presets {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  width: auto;
+}
+.sales-period-toolbar .presets button {
+  white-space: nowrap;
+}
+.sales-period-toolbar .dates {
+  flex: 1 1 100%;
+}
+.sales-period-toolbar .period-dates-toggle,
+.sales-comparison-picker select {
+  border: 1px solid #c8dedf;
+  border-radius: 10px;
+  background: #fff;
+  color: #14575b;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: .8rem;
+}
+.sales-period-toolbar .period-dates-toggle {
+  min-height: 40px;
+  white-space: nowrap;
+}
+.sales-period-toolbar .period-dates-toggle::after {
+  content: " ▾";
+}
+.sales-period-toolbar .period-dates-toggle[aria-expanded="true"]::after {
+  content: " ▴";
+}
+.sales-comparison-picker {
+  display: block;
+  margin-top: 8px;
+}
+.sales-comparison-picker select {
+  min-height: 36px;
+  max-width: 100%;
+}

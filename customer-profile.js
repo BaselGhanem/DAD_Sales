@@ -79,8 +79,9 @@ window.CustomerProfiles={init({rows,ownRows,latest,years,getContext,missingOnly=
   return [...items].filter(item=>(current.get(item)||0)<=0&&(history.get(item)||0)<=0).sort((a,b)=>a.localeCompare(b)).map(item=>({item}));
  }
  function render(){
-  $(`profileMonth`).textContent=year===latest.slice(0,4)?`This month`:`Last month of ${year}`;
-  $(`profileYear`).textContent=year===latest.slice(0,4)?`${year} YTD`:`Full year ${year}`;
+  SalesYears.updatePeriod(dialog.querySelector(`.toolbar`),from.value,to.value);
+  $(`profileMonth`).textContent=SalesYears.monthLabel(year,latest,years);
+  $(`profileYear`).textContent=year===latest.slice(0,4)?`Year to date`:`Full year`;
   for(const [id,period] of [[`profileMonth`,`month`],[`profileYear`,`year`]]){$(id).classList.toggle(`active`,profilePeriod===period);$(id).setAttribute(`aria-pressed`,`${profilePeriod===period}`)}if(!from.value||!to.value||from.value>to.value){$(`profileStatus`).textContent=`Select a valid date range.`;return}$(`profileStatus`).textContent=``;page=otherPage=1;model=calculate(rows,ownRows,customer,from.value,to.value,context);KpiCounter.set(`profileNet`,model.net);if(model.products.length===1||new Set(model.own.map(r=>r.item)).size===1)KpiCounter.set(`profileUnits`,model.units);else KpiCounter.text(`profileUnits`,`Please select one SKU`);$(`profileLast`).textContent=date(model.last);KpiCounter.set(`profileOther`,model.otherValue);renderOtherDetails();
  for(const [status,id] of [[`active`,`profileActive`],[`stopped`,`profileStopped`],[`missing`,`profileMissing`]]){const list=status===`missing`?missingProducts(customer,from.value,to.value,inheritedContext):model.products.filter(p=>p.status===status),host=$(id);host.replaceChildren();if(!list.length){host.textContent=`No items found.`;continue}for(const product of list){const entry=document.createElement(`div`);entry.className=`profile-product`;const title=document.createElement(`strong`);title.textContent=product.item;entry.append(title);if(status===`active`){const text=document.createElement(`span`);text.textContent=`Net sales ${fmt(product.value)} · Units ${fmt(product.units)}`;entry.append(text)}host.append(entry)}}
   renderTrend();

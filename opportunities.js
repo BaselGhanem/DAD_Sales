@@ -49,8 +49,9 @@ window.SalesOpportunities={init({rows,ownRows,latest,years,chronicComparison=fal
  const portfolio=()=>ownRows.filter(row=>row.month.slice(0,4)>=from.value.slice(0,4)&&row.month.slice(0,4)<=to.value.slice(0,4));
  const countryScope=()=>portfolio().filter(r=>(!selectedUnits.size||selectedUnits.has(r.businessUnit))&&(!selectedSupervisors.size||selectedSupervisors.has(r.supervisor)));
  function render(){if(!from.value||!to.value||from.value>to.value){$(`oppStatus`).textContent=`Select a valid date range.`;return}page=1;
-  $(`oppMonth`).textContent=year===latest.slice(0,4)?`This month`:`Last month of ${year}`;
-  $(`oppYear`).textContent=year===latest.slice(0,4)?`${year} YTD`:`Full year ${year}`;
+  SalesYears.updatePeriod($(`opportunities`).querySelector(`.toolbar`),from.value,to.value);
+  $(`oppMonth`).textContent=SalesYears.monthLabel(year,latest,years);
+  $(`oppYear`).textContent=year===latest.slice(0,4)?`Year to date`:`Full year`;
  for(const [id,mode] of [[`oppMonth`,`month`],[`oppYear`,`year`]]){$(id).classList.toggle(`active`,periodMode===mode);$(id).setAttribute(`aria-pressed`,`${periodMode===mode}`)}
  if($(`oppUnitPicker`)){const ownRows=portfolio();for(const value of [...selectedSupervisors])if(!ownRows.some(r=>(!selectedUnits.size||selectedUnits.has(r.businessUnit))&&r.supervisor===value))selectedSupervisors.delete(value);picker(`oppUnit`,[...new Set(ownRows.map(r=>r.businessUnit))].sort(),selectedUnits,`All business units`);picker(`oppSupervisor`,[...new Set(ownRows.filter(r=>!selectedUnits.size||selectedUnits.has(r.businessUnit)).map(r=>r.supervisor))].sort(),selectedSupervisors,`All supervisors`);}
  const hierarchyRows=countryScope();for(const value of [...selectedTeams])if(!hierarchyRows.some(r=>r.team===value))selectedTeams.delete(value);

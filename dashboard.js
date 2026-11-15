@@ -40,7 +40,7 @@ function setPeriod(value){
  document.querySelectorAll(`[data-period]`).forEach(button=>{
   button.classList.toggle(`active`,button.dataset.period===value);
   const active=selectedYear===latest.slice(0,4);
-  button.textContent=button.dataset.period===`month`?(active?`Current month`:`Last month of ${selectedYear}`):(active?`${selectedYear} YTD`:`Full year ${selectedYear}`);
+  button.textContent=button.dataset.period===`month`?SalesYears.monthLabel(selectedYear,latest,years):(active?`Year to date`:`Full year`);
  });
  const {start,end,month}=SalesYears.bounds(years,selectedYear);
  $(`from`).value=value===`month`?month:start;
@@ -83,7 +83,7 @@ const actual=rows.filter(row=>S.match(row,targetFilters)&&keys.has(JSON.stringif
 const cards=$(`targetCards`);cards.innerHTML=``;for(const [title,key] of [[`Value`,`value`],[`Units`,`units`]]){if(key===`units`&&new Set(selected.map(t=>t.item)).size!==1){const card=document.createElement(`article`);card.innerHTML=`<span>Target Units</span><p class="sku-selection-note">Please select one SKU</p>`;cards.append(card);continue}const target=S.sum(selected,key),value=S.sum(actual,key),remaining=Math.max(0,target-value),over=Math.max(0,value-target),percent=target>0?value/target*100:null;const card=document.createElement(`article`);card.innerHTML=`<span>Target ${title}</span><strong>${fmt(target)}</strong><p>Actual: ${fmt(value)}</p><p>${over>0?`Above target: ${fmt(over)}`:`Remaining: ${fmt(remaining)}`}</p><p>Achievement: ${percent===null?`—`:`${fmt(percent)}%`}</p><meter min="0" max="100" value="${Math.max(0,Math.min(100,percent||0))}" aria-label="Achievement ${title}"></meter>`;cards.append(card)}host.hidden=false}
 function renderTable(data){const total=Math.max(1,Math.ceil(data.length/25));page=Math.min(page,total);$(`rowCount`).textContent=`${fmt(data.length)} transactions`;$(`empty`).hidden=data.length>0;$(`rows`).innerHTML=data.slice((page-1)*25,page*25).map(r=>{const values=[dateLabel(r.date),r.area,r.customerName,r.item,fmt(r.value),fmt(r.units),r.group];const labels=[`Date`,`Area`,`Customer`,`Item`,`Net sales`,`Units`,`Product group`];return `<tr>${values.map((v,i)=>`<td data-label="${labels[i]}" class="${(i===4&&r.value<0)||(i===5&&r.units<0)?`negative`:``}">${i===2?`<button type="button" class="customer-link" data-profile-customer="${esc(r.customer)}">${esc(v)}</button>${leadership?`<small style="display:block;color:#70828e">${esc(r.rep)}</small>`:``}`:esc(v)}</td>`).join(``)}</tr>`}).join(``);$(`pageLabel`).textContent=`${page} / ${total}`;$(`prev`).disabled=page===1;$(`next`).disabled=page>=total}
 let current=[];
-function render(reset=true){if(!$(`from`).value||!$(`to`).value||$(`from`).value>$(`to`).value){$(`periodLabel`).textContent=`Select a valid range: start date must precede end date.`;$(`from`).setCustomValidity(`Start date must precede end date.`);$(`from`).reportValidity();return}$(`from`).setCustomValidity(``);if(reset)page=1;current=scoped().sort((a,b)=>b.date.localeCompare(a.date));const m=S.metrics(current);KpiCounter.set(`net`,m.net);if(filters.item.size===1||new Set(current.map(r=>r.item)).size===1)KpiCounter.set(`units`,m.units);else KpiCounter.text(`units`,`Please select one SKU`);KpiCounter.set(`customers`,m.customers);KpiCounter.set(`items`,m.items);$(`periodLabel`).textContent=`${dateLabel($(`from`).value)} — ${dateLabel($(`to`).value)}`;
+function render(reset=true){SalesYears.updatePeriod($(`salesView`).querySelector(`.toolbar`),$(`from`).value,$(`to`).value);if(!$(`from`).value||!$(`to`).value||$(`from`).value>$(`to`).value){$(`periodLabel`).textContent=`Select a valid range: start date must precede end date.`;$(`from`).setCustomValidity(`Start date must precede end date.`);$(`from`).reportValidity();return}$(`from`).setCustomValidity(``);if(reset)page=1;current=scoped().sort((a,b)=>b.date.localeCompare(a.date));const m=S.metrics(current);KpiCounter.set(`net`,m.net);if(filters.item.size===1||new Set(current.map(r=>r.item)).size===1)KpiCounter.set(`units`,m.units);else KpiCounter.text(`units`,`Please select one SKU`);KpiCounter.set(`customers`,m.customers);KpiCounter.set(`items`,m.items);$(`periodLabel`).textContent=`${dateLabel($(`from`).value)} — ${dateLabel($(`to`).value)}`;
 const start=$(`from`).value,end=$(`to`).value;
 const day=86400000,span=Date.parse(end)-Date.parse(start)+day;
 const annual=comparisonMode?.value===`annual`;
@@ -99,7 +99,7 @@ const previous=S.sum(S.subset(rows,previousFrom,previousTo,comparisonFilters).fi
 })),coverage=[...years.entries()].sort(([a],[b])=>a.localeCompare(b)).reduce((next,[year,{earliest,end}])=>{
  if(next>previousTo||end<next||next.slice(0,4)!==year||earliest>next)return next;
  return S.iso(Date.parse(end)+day);
-},previousFrom)>previousTo;$(`comparison`).className=``;if(!coverage){$(`comparison`).textContent=`Comparison unavailable: previous-period data is incomplete.`}else if(previous<=0){$(`comparison`).textContent=`Change vs. ${annual?`same period last year`:`previous period`}: ${fmt(m.net-previous)}`}else{const change=(m.net-previous)/previous*100;$(`comparison`).textContent=`${change>=0?`+`:``}${fmt(change)}% vs. ${annual?`same period last year`:`previous period`}`;$(`comparison`).className=change>=0?`positive`:`negative`}$(`comparisonRange`).textContent=`${dateLabel(previousFrom)} — ${dateLabel(previousTo)}`;renderFilters();renderCharts(current);renderTargets();renderTable(current)}
+},previousFrom)>previousTo;$(`comparison`).className=``;if(!coverage){$(`comparison`).textContent=`Comparison unavailable for these dates.`}else if(previous<=0){$(`comparison`).textContent=`Change vs. ${annual?`same period last year`:`previous period`}: ${fmt(m.net-previous)}`}else{const change=(m.net-previous)/previous*100;$(`comparison`).textContent=`${change>=0?`+`:``}${fmt(change)}% vs. ${annual?`same period last year`:`previous period`}`;$(`comparison`).className=change>=0?`positive`:`negative`}$(`comparisonRange`).textContent=`${dateLabel(previousFrom)} — ${dateLabel(previousTo)}`;renderFilters();renderCharts(current);renderTargets();renderTable(current)}
 try{
 session=getSession();if(!session||session.role!==pageRole){location.replace(`index.html`);return}
 if(typeof Chart===`undefined`)throw Error(`Unable to load page components. Check your connection and try again.`);
@@ -130,14 +130,14 @@ const yearPicker=SalesYears.picker($(`salesView`).querySelector(`.toolbar`),year
  setPeriod(`year`);
 });
 const comparisonLabel=document.createElement(`label`);
-comparisonLabel.className=`sales-year-picker`;
-comparisonLabel.textContent=`Compare`;
+comparisonLabel.className=`sales-comparison-picker`;
 comparisonMode=document.createElement(`select`);
+comparisonMode.setAttribute(`aria-label`, `Compare net sales with`);
 comparisonMode.add(new Option(`Previous period`,`previous`));
 comparisonMode.add(new Option(`Same period last year`,`annual`));
 comparisonMode.onchange=()=>render();
 comparisonLabel.append(comparisonMode);
-$(`salesView`).querySelector(`.toolbar`).append(comparisonLabel);
+$(`comparisonRange`).after(comparisonLabel);
 
 $(`repName`).textContent=businessUnit||countryManager?user.name:supervisor?`${user.name} · ${user.team}`:`Welcome ${user.name}`;$(`updated`).textContent=`Latest sales date: ${dateLabel(latest)}${unavailableYears.length?` · Archive unavailable: ${unavailableYears.join(`, `)}`:``}`;
 
