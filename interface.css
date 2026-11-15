@@ -379,3 +379,24 @@ body .customer-profile .presets button:is(.active,[aria-pressed="true"]) {
 
   body:has(#dashboard) > .install-button { bottom: var(--portal-nav-offset); }
 }
+
+.sales-year-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .84rem;
+  font-weight: 700;
+}
+.sales-year-picker select {
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 1px solid #c8dedf;
+  border-radius: 10px;
+  background: #f1f9f9;
+  color: #14575b;
+  font: inherit;
+}
+.sales-year-picker select:focus-visible {
+  outline: 2px solid #099999;
+  outline-offset: 2px;
+}

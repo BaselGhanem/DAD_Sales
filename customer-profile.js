@@ -29,7 +29,7 @@ function calculate(company,ownRows,customer,from,to,context){
  return {own,other,companySales,otherValue,net:S.sum(own),units:S.sum(own,`units`),last,products};
 }
 window.CustomerProfileMath={calculate};
-window.CustomerProfiles={init({rows,ownRows,latest,getContext,missingOnly=false,chronicComparison=false}){
+window.CustomerProfiles={init({rows,ownRows,latest,years,getContext,missingOnly=false,chronicComparison=false}){
  let customer,context,inheritedContext,chart,page=1,otherPage=1,model,opener,profilePeriod=`custom`;
  const dialog=$(`customerProfile`),from=$(`profileFrom`),to=$(`profileTo`);
  const date=d=>d?d.split(`-`).reverse().join(`/`):`—`;
@@ -78,7 +78,10 @@ window.CustomerProfiles={init({rows,ownRows,latest,getContext,missingOnly=false,
   const history=new Map(S.aggregate(relevant.filter(row=>row.date<historyEnd),`item`,`units`));
   return [...items].filter(item=>(current.get(item)||0)<=0&&(history.get(item)||0)<=0).sort((a,b)=>a.localeCompare(b)).map(item=>({item}));
  }
- function render(){for(const [id,period] of [[`profileMonth`,`month`],[`profileYear`,`year`]]){$(id).classList.toggle(`active`,profilePeriod===period);$(id).setAttribute(`aria-pressed`,`${profilePeriod===period}`)}if(!from.value||!to.value||from.value>to.value){$(`profileStatus`).textContent=`Select a valid date range.`;return}$(`profileStatus`).textContent=``;page=otherPage=1;model=calculate(rows,ownRows,customer,from.value,to.value,context);KpiCounter.set(`profileNet`,model.net);if(model.products.length===1||new Set(model.own.map(r=>r.item)).size===1)KpiCounter.set(`profileUnits`,model.units);else KpiCounter.text(`profileUnits`,`Please select one SKU`);$(`profileLast`).textContent=date(model.last);KpiCounter.set(`profileOther`,model.otherValue);renderOtherDetails();
+ function render(){
+  $(`profileMonth`).textContent=year===latest.slice(0,4)?`This month`:`Last month of ${year}`;
+  $(`profileYear`).textContent=year===latest.slice(0,4)?`${year} YTD`:`Full year ${year}`;
+  for(const [id,period] of [[`profileMonth`,`month`],[`profileYear`,`year`]]){$(id).classList.toggle(`active`,profilePeriod===period);$(id).setAttribute(`aria-pressed`,`${profilePeriod===period}`)}if(!from.value||!to.value||from.value>to.value){$(`profileStatus`).textContent=`Select a valid date range.`;return}$(`profileStatus`).textContent=``;page=otherPage=1;model=calculate(rows,ownRows,customer,from.value,to.value,context);KpiCounter.set(`profileNet`,model.net);if(model.products.length===1||new Set(model.own.map(r=>r.item)).size===1)KpiCounter.set(`profileUnits`,model.units);else KpiCounter.text(`profileUnits`,`Please select one SKU`);$(`profileLast`).textContent=date(model.last);KpiCounter.set(`profileOther`,model.otherValue);renderOtherDetails();
  for(const [status,id] of [[`active`,`profileActive`],[`stopped`,`profileStopped`],[`missing`,`profileMissing`]]){const list=status===`missing`?missingProducts(customer,from.value,to.value,inheritedContext):model.products.filter(p=>p.status===status),host=$(id);host.replaceChildren();if(!list.length){host.textContent=`No items found.`;continue}for(const product of list){const entry=document.createElement(`div`);entry.className=`profile-product`;const title=document.createElement(`strong`);title.textContent=product.item;entry.append(title);if(status===`active`){const text=document.createElement(`span`);text.textContent=`Net sales ${fmt(product.value)} · Units ${fmt(product.units)}`;entry.append(text)}host.append(entry)}}
   renderTrend();
   renderTable();
@@ -122,8 +125,61 @@ window.CustomerProfiles={init({rows,ownRows,latest,getContext,missingOnly=false,
    }
   });
  }
- document.addEventListener(`click`,event=>{const target=event.target.closest(`[data-profile-customer]`);if(!target)return;const id=target.dataset.profileCustomer;const inherited=getContext(target);if(!inherited)return;const client=rows.find(r=>r.customer===id&&inherited.matchesArea(r));if(!client)return;inheritedContext=inherited;context=missingOnly?unrestricted:inherited;opener=target;customer=id;$(`profileName`).textContent=client.customerName;from.value=inherited.from||`${latest.slice(0,4)}-01-01`;to.value=inherited.to||latest;$(`profileArea`).textContent=[...new Set(rows.filter(r=>r.customer===id&&context.matchesArea(r)).map(r=>r.area))].join(`, `);profilePeriod=from.value===`${latest.slice(0,7)}-01`&&to.value===latest?`month`:from.value===`${latest.slice(0,4)}-01-01`&&(to.value===latest||to.value===`${latest.slice(0,4)}-12-31`)?`year`:`custom`;dialog.showModal();document.body.classList.add(`profile-open`);render();$(`profileClose`).focus()});
- $(`profileClose`).onclick=()=>dialog.close();dialog.addEventListener(`close`,()=>{document.body.classList.remove(`profile-open`);if(chart){chart.destroy();chart=null}opener?.focus()});dialog.addEventListener(`click`,e=>{if(e.target===dialog)dialog.close()});from.onchange=to.onchange=()=>{profilePeriod=`custom`;render()};$(`profileYear`).onclick=()=>{profilePeriod=`year`;from.value=`${latest.slice(0,4)}-01-01`;to.value=latest;render()};$(`profileMonth`).onclick=()=>{profilePeriod=`month`;from.value=`${latest.slice(0,7)}-01`;to.value=latest;render()};$(`profilePrev`).onclick=()=>{page--;renderTable()};$(`profileNext`).onclick=()=>{page++;renderTable()};
+ let year=latest.slice(0,4);
+ const yearPicker=SalesYears.picker(dialog.querySelector(`.toolbar`),years,year,value=>{
+  year=value;
+  selectPeriod(`year`);
+ });
+ function clearMonthFilter(){
+  context={...context,months:new Set()};
+  inheritedContext={...inheritedContext,months:new Set()};
+ }
+ function selectPeriod(mode){
+  profilePeriod=mode;
+  const {start,end,month}=SalesYears.bounds(years,year);
+  clearMonthFilter();
+  from.value=mode===`month`?month:start;
+  to.value=end;
+  render();
+ }
+ document.addEventListener(`click`,event=>{
+  const target=event.target.closest(`[data-profile-customer]`);
+  if(!target)return;
+  const id=target.dataset.profileCustomer,inherited=getContext(target);
+  if(!inherited)return;
+  const matches=rows.filter(row=>row.customer===id&&inherited.matchesArea(row));
+  const client=matches.find(row=>row.date>=inherited.from&&row.date<=inherited.to)||matches[0];
+  if(!client)return;
+  inheritedContext=inherited;
+  context=missingOnly?unrestricted:inherited;
+  opener=target;
+  customer=id;
+  $(`profileName`).textContent=client.customerName;
+  from.value=inherited.from||`${latest.slice(0,4)}-01-01`;
+  to.value=inherited.to||latest;
+  const candidate=from.value.slice(0,4);
+  year=years.has(candidate)?candidate:latest.slice(0,4);
+  yearPicker.value=year;
+  $(`profileArea`).textContent=[...new Set(rows.filter(row=>row.customer===id&&context.matchesArea(row)&&row.date>=from.value&&row.date<=to.value).map(row=>row.area))].join(`, `);
+  const {start,end,month}=SalesYears.bounds(years,year);
+  profilePeriod=to.value!==end?`custom`:from.value===month?`month`:from.value===start?`year`:`custom`;
+  dialog.showModal();
+  document.body.classList.add(`profile-open`);
+  render();
+  $(`profileClose`).focus();
+ });
+ $(`profileClose`).onclick=()=>dialog.close();
+ dialog.addEventListener(`close`,()=>{document.body.classList.remove(`profile-open`);if(chart){chart.destroy();chart=null}opener?.focus()});
+ dialog.addEventListener(`click`,event=>{if(event.target===dialog)dialog.close()});
+ from.onchange=to.onchange=()=>{
+  profilePeriod=`custom`;
+  const chosen=from.value.slice(0,4);
+  if(years.has(chosen)&&year!==chosen){year=chosen;yearPicker.value=chosen;clearMonthFilter()}
+  render();
+ };
+ $(`profileYear`).onclick=()=>selectPeriod(`year`);
+ $(`profileMonth`).onclick=()=>selectPeriod(`month`);
+ $(`profilePrev`).onclick=()=>{page--;renderTable()};$(`profileNext`).onclick=()=>{page++;renderTable()};
  if(otherDetails){
   $(`profileOtherPrev`).onclick=()=>{otherPage--;renderOtherTable()};
   $(`profileOtherNext`).onclick=()=>{otherPage++;renderOtherTable()};
