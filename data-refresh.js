@@ -1,6 +1,8 @@
 /* Reload open dashboards when the published workbook version changes. */
 (() => {
   let version = null;
+  let archiveVersion;
+  let retryArchive;
   let checking = false;
   let reloading = false;
   let lastCheck = 0;
@@ -28,8 +30,11 @@
     checking = true;
     lastCheck = Date.now();
     try {
+      const archives=SalesYears.catalog().catch(()=>null);
       const paths=[`data/Up.xlsx`,`credentials.csv`];
       const responses=await Promise.all(paths.map(path=>fetch(`${path}?versionCheck=${Date.now()}`,{method:`HEAD`,cache:`no-store`,signal:AbortSignal.timeout(12000)})));
+      const entries=await archives;
+      if(entries&&(SalesYears.versionOf(entries)!==archiveVersion||(!force&&retryArchive))){update();return}
       if(responses.some(response=>!response.ok))return;
       const fingerprints=responses.map(response=>fingerprint(response.headers));
       if(fingerprints.some(value=>!value))return;
@@ -39,7 +44,9 @@
     } catch { /* Retry automatically after connectivity returns. */ }
     finally { checking = false; }
   }
-  window.addEventListener(`sales-dashboard-ready`, () => {
+  window.addEventListener(`sales-dashboard-ready`, event => {
+    archiveVersion=event.detail.archives;
+    retryArchive=event.detail.retryArchive;
     check(true);
     setInterval(() => check(), 600000);
     document.addEventListener(`visibilitychange`, () => { if (!document.hidden) check(); });
