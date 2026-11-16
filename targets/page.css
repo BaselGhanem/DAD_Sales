@@ -24,3 +24,17 @@
   .target-page .target-table{padding:12px}
   .target-page .target-table :is(td,th){padding:7px 3px;font-size:12px}
 }
+
+.target-embedded{max-width:none}
+.target-embedded #monthly-rows th,.target-embedded #grand-total th{white-space:normal}
+@media(max-width:680px){
+  #dashboard .mobile-nav:has([data-tab="sales-target"]){grid-template-columns:repeat(4,minmax(0,1fr))}
+  #dashboard .mobile-nav:has([data-tab="sales-target"]) button{font-size:11px}
+  #dashboard .target-embedded .target-table table{display:table}
+  #dashboard .target-embedded .target-table thead{display:table-header-group}
+  #dashboard .target-embedded .target-table tbody{display:table-row-group}
+  #dashboard .target-embedded .target-table tfoot{display:table-footer-group}
+  #dashboard .target-embedded .target-table tr{display:table-row}
+  #dashboard .target-embedded .target-table :is(td,th){display:table-cell;padding:7px 3px;font-size:12px}
+  #dashboard .target-embedded .target-table td::before{content:none}
+}

@@ -108,6 +108,7 @@ KpiCounter.set(`oppCount`,current.length);KpiCounter.set(`oppValue`,current.redu
  $(`oppMonth`).onclick=()=>setPeriod(`month`);
  $(`oppYear`).onclick=()=>setPeriod(`year`);
  $(`oppClear`).onclick=()=>{selectedUnits.clear();selectedSupervisors.clear();for(const id of [`oppUnitSearch`,`oppSupervisorSearch`])if($(id))$(id).value=``;selectedTeams.clear();selectedReps.clear();$(`oppTeamSearch`).value=``;$(`oppRepSearch`).value=``;areas.clear();selectedItems.clear();item.value=``;group.value=``;query.value=``;minValue.value=``;maxValue.value=``;minMissing.value=``;$(`oppAreaSearch`).value=``;$(`oppItemSearch`).value=``;for(const label of [...options.children,...itemOptions.children])label.hidden=false;for(const box of options.querySelectorAll(`input`))box.checked=false;render()};$(`oppPrev`).onclick=()=>{page--;table()};$(`oppNext`).onclick=()=>{page++;table()};
+ const comparison = $(`comparison-page`);
  const tabs = [...document.querySelectorAll(`#dashboard [data-tab]`)];
  const mobileButtons = [...document.querySelectorAll(`.mobile-nav button`)];
  const setSelected = (button, selected) => {
@@ -116,15 +117,18 @@ KpiCounter.set(`oppCount`,current.length);KpiCounter.set(`oppValue`,current.redu
  };
  function showView(name, section = `overview`) {
   const isSales = name === `sales`;
+  const isComparison = name === `sales-target` && comparison;
   priorityMode = name === `priorities`;
   $(`salesView`).hidden = !isSales;
-  $(`opportunities`).hidden = isSales;
+  $(`opportunities`).hidden = isSales || !!isComparison;
+  if (comparison) comparison.hidden = !isComparison;
   for (const button of tabs) setSelected(button, button.dataset.tab === name);
   for (const button of mobileButtons) {
    const selected = isSales ? button.dataset.section === section : button.dataset.tab === name;
    setSelected(button, selected);
   }
-  if (!isSales) render();
+  if (isComparison) comparison.dispatchEvent(new Event(`target-view-open`));
+  else if (!isSales) render();
  }
  for (const button of tabs) {
   button.addEventListener(`click`, () => {
@@ -140,7 +144,7 @@ KpiCounter.set(`oppCount`,current.length);KpiCounter.set(`oppValue`,current.redu
    $(section)?.scrollIntoView({behavior, block: `start`});
   });
  }
- showView(`sales`);
+ showView(comparison && location.hash === `#sales-vs-target` ? `sales-target` : `sales`);
  return () => profileContext;
 }};
 })();

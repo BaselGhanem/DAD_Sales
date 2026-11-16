@@ -149,6 +149,22 @@ const chronicComparison=pageRole===`chronic`||(pageRole===`rep`&&(active.rows.le
 const opportunityRows=datasets.flatMap(dataset=>dataset.opportunityRows);
 const comparisonRows=chronicComparison?opportunityRows.filter(isChronicRow):opportunityRows;
 const customerViewRows=chronicComparison?rows.filter(isChronicRow):rows;
+const targetView = $(`comparison-page`);
+if (pageRole === `rep` && targetView) {
+  let loadingComparison;
+  targetView.addEventListener(`target-view-open`, () => {
+    if (loadingComparison) return;
+    $(`target-status`).textContent = `Loading sales and targets…`;
+    loadingComparison = Promise.all([
+      loadSpreadsheetLibrary(),
+      import(`./targets/comparison.js?v=target_tab_1`)
+    ]).then(([, comparison]) => comparison.loadComparison(accounts, user)).catch(error => {
+      console.error(error);
+      $(`target-status`).textContent = `Unable to load the comparison. Reopen this tab to try again.`;
+      loadingComparison = null;
+    });
+  });
+}
 const opportunityProfileContext=window.SalesOpportunities.init({rows:comparisonRows,ownRows:customerViewRows,latest,years,chronicComparison});
 window.CustomerProfiles.init({
  rows:comparisonRows, ownRows:customerViewRows, latest, years, chronicComparison, missingOnly:businessUnit||countryManager,

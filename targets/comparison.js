@@ -1,5 +1,5 @@
 import {buildComparison, months, summarize} from "./model.js";
-import {fetchTargets, getRepresentative} from "./source.js";
+import {fetchTargets} from "./source.js";
 
 const byId = id => document.getElementById(id);
 const money = new Intl.NumberFormat(`en-JO`, {maximumFractionDigits: 0});
@@ -75,18 +75,9 @@ function setup({entries, uploaded, lastMonth}) {
   byId(`target-content`).hidden = false;
 }
 
-try {
-  const accounts = await Credentials.load();
-  const user = getRepresentative(accounts);
-  if (!user) location.replace(`index.html`);
-  else {
-    byId(`representative`).textContent = user.name;
-    const data = await fetchTargets(accounts);
-    if (!data) status.textContent = `Targets have not been uploaded yet.`;
-    else if (data.issues.length) status.textContent = `Targets are awaiting correction. Please check with the administrator.`;
-    else setup(buildComparison(data.rows, data.sales, user.name));
-  }
-} catch (error) {
-  console.error(error);
-  status.textContent = `Unable to load the comparison. Refresh the page to try again.`;
+export async function loadComparison(accounts, user) {
+  const data = await fetchTargets(accounts);
+  if (!data) status.textContent = `Targets have not been uploaded yet.`;
+  else if (data.issues.length) status.textContent = `Targets are awaiting correction. Please check with the administrator.`;
+  else setup(buildComparison(data.rows, data.sales, user.name));
 }

@@ -47,15 +47,3 @@ export async function fetchTargets(accounts) {
   };
   return {...readTargets(workbook.Sheets.Area, XLSX, references), sales};
 }
-
-export function getRepresentative(accounts) {
-  for (const storage of [localStorage, sessionStorage]) {
-    try {
-      const session = JSON.parse(storage.getItem(`dad_sales_session_v1`));
-      if (session?.role !== `rep` || !Number.isFinite(session.expiresAt) || session.expiresAt <= Date.now() || !(session.savedAt <= Date.now())) continue;
-      const user = accounts.users.find(account => account.id === session.id && account.enabled && account.role === `rep`);
-      if (Credentials.valid(user, session)) return user;
-    } catch {}
-  }
-  return null;
-}

@@ -3,47 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#099999">
+  <meta http-equiv="refresh" content="0;url=representative.html#sales-vs-target">
   <title>Sales vs Target | DAD Sales</title>
-  <link rel="stylesheet" href="dashboard.css">
-  <link rel="stylesheet" href="interface.css">
-  <link rel="stylesheet" href="kpi-cards.css">
-  <link rel="stylesheet" href="targets/page.css">
-  <script src="credentials.js" defer></script>
-  <script src="sales-years.js" defer></script>
-  <script src="vendor/xlsx.full.min.js" defer></script>
-  <script type="module" src="targets/comparison.js"></script>
 </head>
-<body>
-<main class="target-page" id="comparison-page">
-  <header>
-    <div><small>DAD SALES · 2026</small><h1>Sales vs Target</h1><p id="representative"></p></div>
-    <a class="target-nav-link" href="representative.html">Sales dashboard</a>
-  </header>
-  <p class="panel" id="target-status" role="status">Loading sales and targets…</p>
-  <div id="target-content" hidden>
-    <section class="toolbar target-controls" aria-label="Comparison filters">
-      <div class="presets"><button type="button" id="ytd">YTD</button></div>
-      <label>From<select id="period-from"></select></label>
-      <label>To<select id="period-to"></select></label>
-      <label>Item<select id="target-item"></select></label>
-      <label>Area<select id="target-area"></select></label>
-    </section>
-    <section class="kpis target-kpis" aria-label="Period totals">
-      <article class="premium-kpi"><span>Sales · JOD</span><strong id="sales-card"></strong></article>
-      <article class="premium-kpi"><span>Target · JOD</span><strong id="target-card"></strong></article>
-      <article class="premium-kpi"><span>Achievement</span><strong id="achievement-card"></strong><small>Against targets for months with uploaded sales</small></article>
-    </section>
-    <section class="panel target-table">
-      <h2>Monthly comparison</h2>
-      <p id="no-target" role="status" hidden>No targets match this selection.</p>
-      <table aria-label="Monthly sales and targets in JOD">
-        <thead><tr><th scope="col">Month</th><th scope="col">Sales</th><th scope="col">Target</th><th scope="col">Ach %</th></tr></thead>
-        <tbody id="monthly-rows"></tbody>
-        <tfoot id="grand-total"></tfoot>
-      </table>
-    </section>
-  </div>
-</main>
-</body>
+<body><a href="representative.html#sales-vs-target">Open Sales vs Target in the sales dashboard</a></body>
 </html>
