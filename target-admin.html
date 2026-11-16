@@ -8,10 +8,10 @@
   <link rel="stylesheet" href="dashboard.css">
   <link rel="stylesheet" href="interface.css">
   <link rel="stylesheet" href="targets/page.css">
-  <script src="credentials.js" defer></script>
+  <script src="credentials.js?v=credential_audit_1" defer></script>
   <script src="sales-years.js" defer></script>
   <script src="vendor/xlsx.full.min.js" defer></script>
-  <script type="module" src="targets/admin.js"></script>
+  <script type="module" src="targets/admin.js?v=credential_audit_1"></script>
 </head>
 <body>
 <main class="target-page">
@@ -26,7 +26,7 @@
   <section class="panel target-table">
     <p id="check-status" role="status"></p>
     <table id="issue-table" aria-label="Workbook errors" hidden>
-      <thead><tr><th scope="col">Excel row</th><th scope="col">Field</th><th scope="col">Issue</th></tr></thead>
+      <thead><tr><th scope="col">File</th><th scope="col">Row</th><th scope="col">Field</th><th scope="col">Issue</th></tr></thead>
       <tbody id="issues"></tbody>
     </table>
   </section>

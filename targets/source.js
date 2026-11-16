@@ -41,7 +41,7 @@ export async function fetchTargets(accounts) {
   ]);
   const workbook = XLSX.read(bytes, {type: `array`});
   const references = {
-    reps: new Set(config.users.filter(user => user.role === `rep` && user.enabled).map(user => user.name)),
+    reps: config.readable === false ? null : new Set(config.users.filter(user => user.role === `rep` && user.enabled).map(user => user.name)),
     items: new Set(sales.map(row => row.item)),
     areas
   };

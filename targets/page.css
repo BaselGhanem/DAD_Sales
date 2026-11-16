@@ -38,3 +38,9 @@
   #dashboard .target-embedded .target-table :is(td,th){display:table-cell;padding:7px 3px;font-size:12px}
   #dashboard .target-embedded .target-table td::before{content:none}
 }
+.target-page #issue-table th:nth-child(2){width:10%}
+.target-page #issue-table th:nth-child(3){width:21%}
+@media(max-width:680px){
+  .target-page #issue-table th:first-child{width:22%}
+  .target-page #issue-table th:nth-child(2){width:12%}
+}

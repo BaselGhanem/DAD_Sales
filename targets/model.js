@@ -34,7 +34,7 @@ export function readTargets(sheet, xlsx, references) {
     for (const header of excelErrors) issue(row, header, `Excel formula error.`);
     const [, repCell, itemCell, areaCell, rate, ...targets] = values;
     const rep = name(repCell), item = name(itemCell), area = areaKey(areaCell);
-    if (!rep || !references.reps.has(rep)) issue(row, `Medreps`, rep ? `Unknown representative: ${rep}` : `Enter a representative name.`);
+    if (!rep || (references.reps && !references.reps.has(rep))) issue(row, `Medreps`, rep ? `Unknown representative: ${rep}` : `Enter a representative name.`);
     if (!item || !references.items.has(item)) issue(row, `Item Desc`, item ? `Unknown item: ${item}` : `Enter an item name.`);
     if (!area || !regions.has(area) || isOther(area)) issue(row, `Area`, area ? `Invalid target area: ${area}` : `Enter an area name.`);
     if (!validNumber(rate) || rate > 1) issue(row, `Percentage`, `Enter an Excel percentage from 0% to 100%.`);
