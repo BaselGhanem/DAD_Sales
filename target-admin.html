@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Target workbook checks | DAD Sales</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="interface.css">
+  <link rel="stylesheet" href="targets/page.css">
+  <script src="credentials.js" defer></script>
+  <script src="sales-years.js" defer></script>
+  <script src="vendor/xlsx.full.min.js" defer></script>
+  <script type="module" src="targets/admin.js"></script>
+</head>
+<body>
+<main class="target-page">
+  <header>
+    <div><small>DAD SALES · 2026</small><h1>Target workbook checks</h1><p>Published workbook at data/target.xlsx</p></div>
+    <a class="target-nav-link" href="secure/">Secure</a>
+  </header>
+  <section class="toolbar" aria-label="Workbook actions">
+    <button type="button" id="check-workbook">Check published file</button>
+    <a class="target-nav-link" href="targets/Target-2026-Template.xlsx" download>Download empty template</a>
+  </section>
+  <section class="panel target-table">
+    <p id="check-status" role="status"></p>
+    <table id="issue-table" aria-label="Workbook errors" hidden>
+      <thead><tr><th scope="col">Excel row</th><th scope="col">Field</th><th scope="col">Issue</th></tr></thead>
+      <tbody id="issues"></tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>
