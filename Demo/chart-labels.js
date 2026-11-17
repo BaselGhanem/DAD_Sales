@@ -28,7 +28,7 @@
           if (!Number.isFinite(value) || element.skip || !chart.getDataVisibility(index)) return;
           const {x, y} = element.tooltipPosition();
           if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-          const text = number.format(value);
+          const text = dataset.formatDataLabel ? dataset.formatDataLabel(value) : number.format(value);
           const textWidth = ctx.measureText(text).width;
           ctx.save();
           if (horizontal) {

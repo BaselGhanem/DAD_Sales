@@ -32,7 +32,7 @@
           if (!Number.isFinite(value) || element.skip || !chart.getDataVisibility(index)) return;
           const {x, y} = element.tooltipPosition();
           if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-          const text = dataset.formatValue?dataset.formatValue(value):number.format(value);
+          const text = dataset.formatDataLabel ? dataset.formatDataLabel(value) : dataset.formatValue?dataset.formatValue(value):number.format(value);
           const textWidth = ctx.measureText(text).width;
           const referencePoint = referencePoints[index];
           let labelY = y;
