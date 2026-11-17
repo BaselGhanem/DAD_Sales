@@ -34,6 +34,13 @@ window.CustomerProfiles={init({rows,ownRows,latest,years,getContext,missingOnly=
  const dialog=$(`customerProfile`),from=$(`profileFrom`),to=$(`profileTo`);
  const date=d=>d?d.split(`-`).reverse().join(`/`):`—`;
  const bonusCard=bonusView?.card($(`profileUnits`),`profileBonus`);
+ const bonusDetailPanel=bonusView?document.createElement(`section`):null;
+ if(bonusDetailPanel){
+  bonusDetailPanel.className=`panel bonus-panel`;
+  bonusDetailPanel.hidden=true;
+  bonusDetailPanel.innerHTML=`<h2></h2><p class="bonus-empty" hidden>No purchased items match this period.</p><div class="bonus-table"></div>`;
+  dialog.querySelector(`.profile-products`).before(bonusDetailPanel);
+ }
  const bonusColumns=[`Bonus Units`,`Bonus %`];
  if(bonusView){
   const header=$(`profileRows`).closest(`table`).tHead.rows[0];
@@ -100,6 +107,18 @@ window.CustomerProfiles={init({rows,ownRows,latest,years,getContext,missingOnly=
   $(`profileMonth`).textContent=SalesYears.monthLabel(year,latest,years);
   $(`profileYear`).textContent=year===latest.slice(0,4)?`Year to date`:`Full year`;
   for(const [id,period] of [[`profileMonth`,`month`],[`profileYear`,`year`]]){$(id).classList.toggle(`active`,profilePeriod===period);$(id).setAttribute(`aria-pressed`,`${profilePeriod===period}`)}if(!from.value||!to.value||from.value>to.value){$(`profileStatus`).textContent=`Select a valid date range.`;return}$(`profileStatus`).textContent=``;page=otherPage=1;model=calculate(rows,ownRows,customer,from.value,to.value,context);KpiCounter.set(`profileNet`,model.net);if(model.products.length===1||new Set(model.own.map(r=>r.item)).size===1)KpiCounter.set(`profileUnits`,model.units);else KpiCounter.text(`profileUnits`,`Please select one SKU`);$(`profileLast`).textContent=date(model.last);KpiCounter.set(`profileOther`,model.otherValue);renderOtherDetails();
+ if(bonusDetailPanel){
+  const scope=inheritedContext.bonusDetail;
+  bonusDetailPanel.hidden=!scope;
+  if(scope){
+   const followUp=scope.mode===`priorities`;
+   const items=followUp?new Set(scope.items):scope.items;
+   const transactions=rows.filter(row=>row.customer===customer&&row.date>=from.value&&row.date<=to.value&&
+    inheritedContext.matchesArea(row)&&(!inheritedContext.months.size||inheritedContext.months.has(row.month))&&
+    (followUp?items.has(row.item):!items.has(row.item)));
+   bonusView.renderCustomerDetails(bonusDetailPanel,scope,transactions);
+  }
+ }
  const bonusRows=bonusView&&model.own.filter(row=>
   inheritedContext.matchesPortfolio(row)&&inheritedContext.matchesItem(row)&&
   inheritedContext.matchesArea(row)&&(!inheritedContext.months.size||inheritedContext.months.has(row.month))

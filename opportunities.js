@@ -145,6 +145,12 @@ KpiCounter.set(`oppCount`,current.length);KpiCounter.set(`oppValue`,current.redu
   });
  }
  showView(comparison && location.hash === `#sales-vs-target` ? `sales-target` : `sales`);
- return () => profileContext;
+ return customer=>{
+  const result=current.find(entry=>entry.customer===customer);
+  if(!profileContext||!result)return null;
+  return {...profileContext,bonusDetail:priorityMode
+   ?{mode:`priorities`,items:result.missing}
+   :{mode:`opportunities`,items:profileContext.otherExclusion}};
+ };
 }};
 })();

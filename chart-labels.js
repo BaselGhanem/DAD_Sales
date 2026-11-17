@@ -4,8 +4,9 @@
   Chart.register({
     id: `salesValueLabels`,
     beforeUpdate(chart) {
+      const formatValue=chart.data.datasets[0]?.formatValue;
       for (const axis of Object.values(chart.scales)) {
-        if (axis.type === `linear` || axis.type === `logarithmic`) axis.options.ticks.callback = value => number.format(Number(value));
+        if (axis.type === `linear` || axis.type === `logarithmic`) axis.options.ticks.callback = value => formatValue?formatValue(Number(value)):number.format(Number(value));
       }
     },
     afterDatasetsDraw(chart) {
@@ -31,7 +32,7 @@
           if (!Number.isFinite(value) || element.skip || !chart.getDataVisibility(index)) return;
           const {x, y} = element.tooltipPosition();
           if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-          const text = number.format(value);
+          const text = dataset.formatValue?dataset.formatValue(value):number.format(value);
           const textWidth = ctx.measureText(text).width;
           const referencePoint = referencePoints[index];
           let labelY = y;

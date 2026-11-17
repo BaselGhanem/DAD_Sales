@@ -6,7 +6,7 @@ const filters=Object.fromEntries(Object.keys(dimensions).map(k=>[k,new Set()]));
 const reducedLoaderMotion=matchMedia(`(prefers-reduced-motion: reduce)`).matches;
 let rows=[],latest,selectedYear,period=`month`,page=1,charts={},targetRows=[],session,user,comparisonMode;
 const years=new Map();
-let archivesForRefresh=[],bonusView;
+let archivesForRefresh=[],bonusView,trendMetric;
 const unavailableYears=[];
 const esc=s=>String(s??``).replace(/[&<>"']/g,c=>({[`&`]:`&amp;`,[`<`]:`&lt;`,[`>`]:`&gt;`,[`"`]:`&quot;`,[`'`]:`&#39;`})[c]);
 const getSession=()=>{for(const storage of [localStorage,sessionStorage]){try{const val=JSON.parse(storage.getItem(`dad_sales_session_v1`));if(val&&Number.isFinite(val.expiresAt)&&val.expiresAt>Date.now()&&val.savedAt<=Date.now())return val}catch{}}return null};
@@ -49,7 +49,7 @@ function setPeriod(value){
 }
 function loadSales(source={}){
  return new Promise((resolve,reject)=>{
-  const worker=new Worker(`parser.worker.js?v=bonus_phase_1`);
+  const worker=new Worker(`parser.worker.js?v=bonus_phase_2`);
   const finish=(callback,value)=>{clearTimeout(timeout);worker.terminate();callback(value)};
   const timeout=setTimeout(()=>finish(reject,Error(`Data loading timed out. Please try again.`)),90000);
   worker.onmessage=({data})=>data.error?finish(reject,Error(data.error)):finish(resolve,data);
@@ -65,11 +65,51 @@ const detail=document.createElement(`details`);detail.className=`filter`;detail.
 for(const [value,title] of options){const labelEl=document.createElement(`label`),input=document.createElement(`input`);input.type=`checkbox`;input.checked=filters[key].has(value);input.addEventListener(`change`,()=>{if(input.checked)filters[key].add(value);else filters[key].delete(value);if(countryManager&&[`businessUnit`,`supervisor`,`team`,`rep`].includes(key)){const hierarchy=[`businessUnit`,`supervisor`,`team`,`rep`];for(const child of hierarchy.slice(hierarchy.indexOf(key)+1))filters[child].clear()}render()});labelEl.append(input,document.createTextNode(title));labelEl.dataset.search=title.toLocaleLowerCase();list.append(labelEl)}
 if(!options.length)list.textContent=`No options available.`;search.addEventListener(`input`,()=>{for(const labelEl of list.children)labelEl.hidden=!labelEl.dataset.search.includes(search.value.toLocaleLowerCase())});box.append(list);detail.append(box);host.append(detail)}
 const chips=$(`chips`);chips.replaceChildren();for(const [key,values] of Object.entries(filters))for(const value of values){const b=document.createElement(`button`);const title=key===`customer`?rows.find(r=>r.customer===value)?.customerName:value;b.textContent=`${dimensions[key]}: ${title} ×`;b.onclick=()=>{values.delete(value);render()};chips.append(b)}}
-function draw(id,type,labels,values,filterKey,rawLabels=labels){if(charts[id])charts[id].destroy();const horizontal=type===`bar`,mobile=matchMedia(`(max-width:680px)`).matches;if(horizontal)$(id).parentElement.style.height=`${Math.max(320,labels.length*(mobile?40:42)+55)}px`;charts[id]=new Chart($(id),{type,data:{labels,datasets:[{label:`Net sales`,data:values,borderColor:`#099999`,backgroundColor:horizontal?values.map((v,i)=>v<0?`#c97980`:[`#087f83`,`#099999`,`#28a8a5`,`#4ab8b0`][Math.min(i,3)]):context=>{const chart=context.chart,area=chart.chartArea;if(!area)return `#09999918`;const gradient=chart.ctx.createLinearGradient(0,area.top,0,area.bottom);gradient.addColorStop(0,`rgba(9,153,153,0.24)`);gradient.addColorStop(1,`rgba(9,153,153,0.015)`);return gradient},borderWidth:horizontal?0:2.5,borderRadius:horizontal?7:0,maxBarThickness:22,barPercentage:.65,categoryPercentage:.8,fill:!horizontal,cubicInterpolationMode:`monotone`,tension:.35,pointRadius:values.length>40?0:2,pointHoverRadius:5}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:horizontal?16:65,right:horizontal?90:18,left:horizontal?8:4,bottom:8}},indexAxis:horizontal?`y`:`x`,animation:matchMedia(`(prefers-reduced-motion: reduce)`).matches?false:{duration:650,easing:`easeOutQuart`},plugins:{legend:{display:false},tooltip:{rtl:false,titleFont:{size:mobile?14:16,weight:`700`},bodyFont:{size:mobile?13:15},padding:12,callbacks:{title:items=>rawLabels[items[0].dataIndex],label:ctx=>`Net sales: ${fmt(ctx.raw)}`}}},scales:{x:{beginAtZero:true,border:{display:false},grid:{display:!horizontal,color:`#edf2f3`},ticks:{color:`#70828e`,font:{family:`Segoe UI, Almarai, Arial`,size:mobile?12:14},padding:8,...(horizontal?{maxTicksLimit:7}:{autoSkip:false,minRotation:labels.length>12&&labels.some(label=>String(label).length>2)?65:0,maxRotation:labels.every(label=>String(label).length===2)?0:90,callback:function(value,index){const label=this.getLabelForValue(value);return mobile&&labels.length>18&&String(label).length===2?(index%2?[``,label]:[label,``]):label}})}},y:{beginAtZero:true,border:{display:false},grid:{display:!horizontal,color:`#edf2f3`},ticks:{color:`#526c7b`,font:{family:`Segoe UI, Almarai, Arial`,size:mobile?12:14},padding:8,callback:horizontal?function(v){const text=this.getLabelForValue(v);return text.length>28?`${text.slice(0,27)}…`:text}:undefined}}},onClick:(event,elements)=>{if(filterKey&&elements.length){const val=charts[id].$keys[elements[0].index];filters[filterKey]=new Set([val]);render()}}}});charts[id].$keys=rawLabels}
-function renderCharts(data){if(countryManager){const byUnit=S.aggregate(data,`businessUnit`);draw(`businessUnitPerformance`,`bar`,byUnit.map(r=>r[0]),byUnit.map(r=>r[1]),`businessUnit`);}if(businessUnit||countryManager){const byTeam=S.aggregate(data,`team`);$(`teamPerformance`).parentElement.style.height=`${Math.max(260,byTeam.length*42+45)}px`;draw(`teamPerformance`,`bar`,byTeam.map(r=>r[0]),byTeam.map(r=>r[1]),`team`);}if(leadership){const reps=S.aggregate(data,`rep`);$(`repPerformance`).parentElement.style.height=`${Math.max(260,reps.length*38+45)}px`;draw(`repPerformance`,`bar`,reps.map(r=>r[0]),reps.map(r=>r[1]),`rep`);}const start=$(`from`).value,end=$(`to`).value,days=(Date.parse(end)-Date.parse(start))/86400000,daily=days<=45;const map=new Map();let d=new Date(`${start}T00:00:00Z`);while(S.iso(d)<=end){const key=S.iso(d).slice(0,daily?10:7);map.set(key,0);if(daily)d.setUTCDate(d.getUTCDate()+1);else{d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+1)}}for(const r of data){const key=r.date.slice(0,daily?10:7);map.set(key,(map.get(key)||0)+r.value)}const singleMonth=start.slice(0,7)===end.slice(0,7);$(`trendMode`).textContent=daily?(singleMonth?`${start.slice(5,7)}-${start.slice(0,4)}`:`Daily`):`Monthly`;draw(`trend`,`line`,[...map.keys()].map(k=>daily?(singleMonth?k.slice(8,10):`${k.slice(8,10)}-${k.slice(5,7)}`):`${k.slice(5,7)}-${k.slice(0,4)}`),[...map.values()],undefined,[...map.keys()].map(k=>daily?`${k.slice(8,10)}-${k.slice(5,7)}-${k.slice(0,4)}`:`${k.slice(5,7)}-${k.slice(0,4)}`));
+function draw(id,type,labels,values,filterKey,rawLabels=labels,options={}){if(charts[id])charts[id].destroy();const horizontal=type===`bar`,mobile=matchMedia(`(max-width:680px)`).matches;if(horizontal)$(id).parentElement.style.height=`${Math.max(320,labels.length*(mobile?40:42)+55)}px`;charts[id]=new Chart($(id),{type,data:{labels,datasets:[{label:options.label??`Net sales`,formatValue:options.formatValue,data:values,borderColor:`#099999`,backgroundColor:horizontal?values.map((v,i)=>v<0?`#c97980`:[`#087f83`,`#099999`,`#28a8a5`,`#4ab8b0`][Math.min(i,3)]):context=>{const chart=context.chart,area=chart.chartArea;if(!area)return `#09999918`;const gradient=chart.ctx.createLinearGradient(0,area.top,0,area.bottom);gradient.addColorStop(0,`rgba(9,153,153,0.24)`);gradient.addColorStop(1,`rgba(9,153,153,0.015)`);return gradient},borderWidth:horizontal?0:2.5,borderRadius:horizontal?7:0,maxBarThickness:22,barPercentage:.65,categoryPercentage:.8,fill:!horizontal,cubicInterpolationMode:`monotone`,tension:.35,pointRadius:values.length>40?0:2,pointHoverRadius:5}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:horizontal?16:65,right:horizontal?90:18,left:horizontal?8:4,bottom:8}},indexAxis:horizontal?`y`:`x`,animation:matchMedia(`(prefers-reduced-motion: reduce)`).matches?false:{duration:650,easing:`easeOutQuart`},...(options.interaction?{interaction:options.interaction}:{}),plugins:{legend:{display:false},tooltip:options.tooltip??{rtl:false,titleFont:{size:mobile?14:16,weight:`700`},bodyFont:{size:mobile?13:15},padding:12,callbacks:{title:items=>rawLabels[items[0].dataIndex],label:ctx=>`Net sales: ${fmt(ctx.raw)}`}}},scales:{x:{beginAtZero:true,border:{display:false},grid:{display:!horizontal,color:`#edf2f3`},ticks:{color:`#70828e`,font:{family:`Segoe UI, Almarai, Arial`,size:mobile?12:14},padding:8,...(horizontal?{maxTicksLimit:7}:{autoSkip:false,minRotation:labels.length>12&&labels.some(label=>String(label).length>2)?65:0,maxRotation:labels.every(label=>String(label).length===2)?0:90,callback:function(value,index){const label=this.getLabelForValue(value);return mobile&&labels.length>18&&String(label).length===2?(index%2?[``,label]:[label,``]):label}})}},y:{beginAtZero:true,border:{display:false},grid:{display:!horizontal,color:`#edf2f3`},ticks:{color:`#526c7b`,font:{family:`Segoe UI, Almarai, Arial`,size:mobile?12:14},padding:8,callback:horizontal?function(v){const text=this.getLabelForValue(v);return text.length>28?`${text.slice(0,27)}…`:text}:undefined}}},onClick:(event,elements)=>{if(filterKey&&elements.length){const val=charts[id].$keys[elements[0].index];filters[filterKey]=new Set([val]);render()}}}});charts[id].$keys=rawLabels}
+function renderTrend(data){
+ const start=$(`from`).value,end=$(`to`).value;
+ const daily=(Date.parse(end)-Date.parse(start))/86400000<=45;
+ const singleMonth=start.slice(0,7)===end.slice(0,7);
+ const key=daily?`date`:`month`;
+ const dates=[];
+ for(let date=new Date(`${start}T00:00:00Z`);S.iso(date)<=end;){
+  dates.push(S.iso(date).slice(0,daily?10:7));
+  if(daily)date.setUTCDate(date.getUTCDate()+1);
+  else{date.setUTCDate(1);date.setUTCMonth(date.getUTCMonth()+1);}
+ }
+ const labels=dates.map(value=>daily
+  ?(singleMonth?value.slice(8,10):`${value.slice(8,10)}-${value.slice(5,7)}`)
+  :`${value.slice(5,7)}-${value.slice(0,4)}`);
+ const titles=dates.map(value=>daily?dateLabel(value):`${value.slice(5,7)}-${value.slice(0,4)}`);
+ $(`trendMode`).textContent=daily?(singleMonth?`${start.slice(5,7)}-${start.slice(0,4)}`:`Daily`):`Monthly`;
+ const metric=trendMetric?.value;
+ if(!metric||metric===`sales`){
+  const totals=new Map(S.aggregate(data,key));
+  draw(`trend`,`line`,labels,dates.map(date=>totals.get(date)??0),undefined,titles);
+  PremiumTooltip.bind(charts.trend,{rows:data,key,keys:dates,titles,period:`${dateLabel(start)} — ${dateLabel(end)}`});
+  return;
+ }
+ const totals=new Map(S.bonusSummary(data,key).map(total=>[total.name,total]));
+ const points=dates.map(date=>totals.get(date)??{bonus:0,units:0});
+ const rate=metric===`rate`;
+ const values=points.map(point=>rate?S.bonusRate(point.bonus,point.units):point.bonus);
+ draw(`trend`,`line`,labels,values,undefined,titles,{
+  label:rate?`Bonus %`:`Bonus Units`,
+  formatValue:rate?BonusView.formatRate:undefined,
+  interaction:{mode:`nearest`,axis:`x`,intersect:false},
+  tooltip:{enabled:true,external:null,callbacks:{
+   title:items=>titles[items[0].dataIndex],
+   label:({dataIndex})=>{
+    const point=points[dataIndex];
+    return [`Bonus Units: ${BonusView.quantity(point.bonus)}`,`Net Units: ${fmt(point.units)}`,`Bonus %: ${BonusView.percent(point)}`];
+   }
+  }}
+ });
+}
+function renderCharts(data){if(countryManager){const byUnit=S.aggregate(data,`businessUnit`);draw(`businessUnitPerformance`,`bar`,byUnit.map(r=>r[0]),byUnit.map(r=>r[1]),`businessUnit`);}if(businessUnit||countryManager){const byTeam=S.aggregate(data,`team`);$(`teamPerformance`).parentElement.style.height=`${Math.max(260,byTeam.length*42+45)}px`;draw(`teamPerformance`,`bar`,byTeam.map(r=>r[0]),byTeam.map(r=>r[1]),`team`);}if(leadership){const reps=S.aggregate(data,`rep`);$(`repPerformance`).parentElement.style.height=`${Math.max(260,reps.length*38+45)}px`;draw(`repPerformance`,`bar`,reps.map(r=>r[0]),reps.map(r=>r[1]),`rep`);}renderTrend(data);
+
 const group=$(`productLevel`).value;for(const [id,key] of [[`products`,group],[`areas`,`area`],[`clients`,`customer`]]){const aggregated=S.aggregate(data,key).slice(0,10);const keys=aggregated.map(x=>x[0]),labels=keys.map(k=>key===`customer`?rows.find(r=>r.customer===k)?.customerName||k:k);if(id===`areas`){$(`areas`).parentElement.style.height=`${Math.max(260,aggregated.length*40+40)}px`;}draw(id,`bar`,labels,aggregated.map(x=>x[1]),key,labels);charts[id].$keys=keys}
-const tooltipPeriod=`${dateLabel(start)} — ${dateLabel(end)}`;
-PremiumTooltip.bind(charts.trend,{rows:data,key:daily?`date`:`month`,keys:[...map.keys()],titles:charts.trend.$keys,period:tooltipPeriod});
+const tooltipPeriod=`${dateLabel($(`from`).value)} — ${dateLabel($(`to`).value)}`;
 for(const [id,key] of [[`products`,group],[`areas`,`area`],[`clients`,`customer`],...(leadership?[[`repPerformance`,`rep`]]:[]),...(businessUnit||countryManager?[[`teamPerformance`,`team`]]:[]),...(countryManager?[[`businessUnitPerformance`,`businessUnit`]]:[])])PremiumTooltip.bind(charts[id],{rows:data,key,keys:charts[id].$keys,titles:charts[id].data.labels,period:tooltipPeriod});
 }
 function renderTargets(){const host=$(`targets`);host.hidden=true;if(!targetRows.length)return;const from=$(`from`).value,to=$(`to`).value;const selectedMonths=new Set();for(let d=new Date(`${from.slice(0,7)}-01T00:00:00Z`);S.iso(d)<=to;d.setUTCMonth(d.getUTCMonth()+1)){const month=S.iso(d).slice(0,7);if(!filters.month.size||filters.month.has(month))selectedMonths.add(month)}
@@ -165,12 +205,22 @@ if (pageRole === `rep` && targetView) {
     });
   });
 }
-if(leadership)bonusView=BonusView.init();
+if(leadership){
+ bonusView=BonusView.init();
+ trendMetric=document.createElement(`select`);
+ trendMetric.setAttribute(`aria-label`,`Trend metric`);
+ for(const [value,label] of [[`sales`,`Net sales`],[`bonus`,`Bonus Units`],[`rate`,`Bonus %`]])trendMetric.add(new Option(label,value));
+ const heading=$(`trendMode`).parentElement;
+ heading.classList.add(`bonus-trend-heading`);
+ heading.querySelector(`h2`).textContent=`Trend`;
+ heading.append(trendMetric);
+ trendMetric.onchange=()=>renderTrend(current);
+}
 const opportunityProfileContext=window.SalesOpportunities.init({rows:comparisonRows,ownRows:customerViewRows,latest,years,chronicComparison});
 window.CustomerProfiles.init({
  rows:comparisonRows, ownRows:customerViewRows, latest, years, chronicComparison, bonusView:leadership?BonusView:null, missingOnly:businessUnit||countryManager,
  getContext(target) {
-  if(target.closest(`#opportunities`))return opportunityProfileContext();
+  if(target.closest(`#opportunities`))return opportunityProfileContext(target.dataset.profileCustomer);
   const selected=Object.fromEntries(Object.entries(filters).map(([key,values])=>[key,new Set(values)]));
   const {month,item,group,...portfolioFilters}=selected;
   return {

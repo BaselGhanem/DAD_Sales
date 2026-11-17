@@ -3,10 +3,8 @@
  const number=new Intl.NumberFormat(`en-US`,{maximumFractionDigits:0});
  const rate=new Intl.NumberFormat(`en-US`,{style:`percent`,maximumFractionDigits:1,signDisplay:`negative`});
  const quantity=value=>value===null?`—`:number.format(value);
- const percent=({bonus,units})=>{
-  const value=S.bonusRate(bonus,units);
-  return value===null?`—`:rate.format(value);
- };
+ const formatRate=value=>value===null?`—`:rate.format(value);
+ const percent=({bonus,units})=>formatRate(S.bonusRate(bonus,units));
  const empty={units:0,bonus:0};
  const escape=value=>String(value).replace(/[&<>"']/g,char=>({[`&`]:`&amp;`,[`<`]:`&lt;`,[`>`]:`&gt;`,[`"`]:`&quot;`,[`'`]:`&#39;`})[char]);
 
@@ -128,7 +126,20 @@
   return {panel,render};
  }
 
- window.BonusView={card,updateCard,quantity,percent,init(){
+ function renderCustomerDetails(panel,scope,transactions){
+  const totals=new Map(S.bonusSummary(transactions,`item`).map(total=>[total.name,total]));
+  const items=scope.mode===`priorities`
+   ?scope.items.map(name=>totals.get(name)??{name,...empty})
+   :[...totals.values()].filter(total=>total.units>0).sort((a,b)=>a.name.localeCompare(b.name));
+  panel.querySelector(`h2`).textContent=scope.mode===`priorities`?`Bonus · Items to follow up`:`Bonus · Other items purchased`;
+  const host=panel.querySelector(`.bonus-table`);
+  host.hidden=!items.length;
+  panel.querySelector(`.bonus-empty`).hidden=!!items.length;
+  if(!items.length)return;
+  host.innerHTML=table(`Item`);
+  host.querySelector(`tbody`).innerHTML=items.map(total=>`<tr><th scope="row">${escape(total.name)}</th>${cells(total)}</tr>`).join(``);
+ }
+ window.BonusView={card,updateCard,quantity,percent,formatRate,renderCustomerDetails,init(){
   const overview=card(document.getElementById(`units`),`bonusUnits`);
   const products=createItemTable();
   document.getElementById(`charts`).before(products.panel);

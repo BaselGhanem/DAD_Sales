@@ -36,10 +36,13 @@ self.onmessage=async({data})=>{try{
  if(!date||!Number.isFinite(timestamp)||new Date(timestamp).toISOString().slice(0,10)!==date)throw Error(`The sales workbook contains an invalid date.`);years.add(date.slice(0,4));if(date>latest)latest=date;if(date<earliest)earliest=date;
  const value=Number(r.Value),units=Number(r.Units);if(String(r.Value).trim()===``||String(r.Units).trim()===``||!Number.isFinite(value)||!Number.isFinite(units))throw Error(`The sales workbook contains an invalid number.`);
  if(!String(r[`Cust No`]).trim())throw Error(`The sales workbook contains a transaction without a customer code.`);
- const projected={rep:String(r.MR).trim(),customer:String(r[`Cust No`]).trim(),customerName:String(r[`Cust Name`]).trim(),area:normalizeArea(r[`Area Name`]),team:String(r.Team).trim(),group:String(r[`Product Group`]).trim(),item:String(r[`Item Name`]).trim(),date,month:date.slice(0,7),value,units};company.push(projected);if(data.role===`country-manager`|| (data.role===`chronic`||data.role===`anti-infective`?Array.isArray(data.teams)&&data.teams.includes(projected.team):data.role===`supervisor`?!!data.team&&projected.team===data.team:projected.rep===data.name)){
+ const projected={rep:String(r.MR).trim(),customer:String(r[`Cust No`]).trim(),customerName:String(r[`Cust Name`]).trim(),area:normalizeArea(r[`Area Name`]),team:String(r.Team).trim(),group:String(r[`Product Group`]).trim(),item:String(r[`Item Name`]).trim(),date,month:date.slice(0,7),value,units};
+ if(leadership){
   const bonus=Number(r.Bonus);
-  output.push(leadership?{...projected,bonus:Number.isFinite(bonus)?bonus:null}:projected);
- }}
+  projected.bonus=Number.isFinite(bonus)?bonus:null;
+ }
+ company.push(projected);if(data.role===`country-manager`|| (data.role===`chronic`||data.role===`anti-infective`?Array.isArray(data.teams)&&data.teams.includes(projected.team):data.role===`supervisor`?!!data.team&&projected.team===data.team:projected.rep===data.name))output.push(projected);
+ }
  if(years.size!==1||(year&&!years.has(year)))throw Error(`The workbook must contain only sales from its assigned year.`);
  if(copy){
   try{
