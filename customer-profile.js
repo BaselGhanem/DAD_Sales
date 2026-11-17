@@ -34,6 +34,16 @@ window.CustomerProfiles={init({rows,ownRows,latest,years,getContext,missingOnly=
  const dialog=$(`customerProfile`),from=$(`profileFrom`),to=$(`profileTo`);
  const date=d=>d?d.split(`-`).reverse().join(`/`):`—`;
  const bonusCard=bonusView?.card($(`profileUnits`),`profileBonus`);
+ const bonusColumns=[`Bonus Units`,`Bonus %`];
+ if(bonusView){
+  const header=$(`profileRows`).closest(`table`).tHead.rows[0];
+  for(const label of bonusColumns){
+   const th=document.createElement(`th`);
+   th.scope=`col`;
+   th.textContent=label;
+   header.append(th);
+  }
+ }
  const otherDetails=$(`profileOtherDetails`);
  if(chronicComparison){
   $(`profileOther`).previousElementSibling.textContent=`Net purchases of other Chronic items`;
@@ -43,10 +53,16 @@ window.CustomerProfiles={init({rows,ownRows,latest,years,getContext,missingOnly=
   }
  }
  const sortTransactions=rows=>[...rows].sort((a,b)=>b.date.localeCompare(a.date));
- function renderTransactions(rows,currentPage,{body,pageLabel,prev,next,count}){
+ function renderTransactions(rows,currentPage,{body,pageLabel,prev,next,count,showBonus=false}){
   const pages=Math.max(1,Math.ceil(rows.length/25));
   currentPage=Math.max(1,Math.min(currentPage,pages));
-  $(body).innerHTML=rows.slice((currentPage-1)*25,currentPage*25).map(r=>`<tr><td data-label="Date">${date(r.date)}</td><td data-label="Item">${esc(r.item)}</td><td data-label="Net sales">${fmt(r.value)}</td><td data-label="Units">${fmt(r.units)}</td></tr>`).join(``);
+  $(body).innerHTML=rows.slice((currentPage-1)*25,currentPage*25).map(row=>{
+   const bonus=row.bonus??null;
+   const bonusCells=showBonus
+    ?`<td data-label="${bonusColumns[0]}">${bonusView.quantity(bonus)}</td><td data-label="${bonusColumns[1]}">${bonusView.percent({bonus,units:row.units})}</td>`
+    :``;
+   return `<tr><td data-label="Date">${date(row.date)}</td><td data-label="Item">${esc(row.item)}</td><td data-label="Net sales">${fmt(row.value)}</td><td data-label="Units">${fmt(row.units)}</td>${bonusCells}</tr>`;
+  }).join(``);
   $(pageLabel).textContent=`${currentPage} / ${pages}`;
   $(prev).disabled=currentPage<=1;
   $(next).disabled=currentPage>=pages;
@@ -54,7 +70,7 @@ window.CustomerProfiles={init({rows,ownRows,latest,years,getContext,missingOnly=
   return currentPage;
  }
  function renderTable(){
-  page=renderTransactions(sortTransactions(model.own),page,{body:`profileRows`,pageLabel:`profilePage`,prev:`profilePrev`,next:`profileNext`,count:`profileMovementsCount`});
+  page=renderTransactions(sortTransactions(model.own),page,{body:`profileRows`,pageLabel:`profilePage`,prev:`profilePrev`,next:`profileNext`,count:`profileMovementsCount`,showBonus:!!bonusView});
  }
  function renderOtherTable(){
   otherPage=renderTransactions(sortTransactions(model.other),otherPage,{body:`profileOtherRows`,pageLabel:`profileOtherPage`,prev:`profileOtherPrev`,next:`profileOtherNext`,count:`profileOtherCount`});
