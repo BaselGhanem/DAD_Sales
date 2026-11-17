@@ -165,9 +165,7 @@ if (pageRole === `rep` && targetView) {
     });
   });
 }
-if(leadership)bonusView=BonusView.init({
- dimensions:[...(countryManager?[[`businessUnit`,`Business unit`]]:[]),...(businessUnit||countryManager?[[`team`,`Team`]]:[]),[`rep`,`Medical representative`]]
-});
+if(leadership)bonusView=BonusView.init();
 const opportunityProfileContext=window.SalesOpportunities.init({rows:comparisonRows,ownRows:customerViewRows,latest,years,chronicComparison});
 window.CustomerProfiles.init({
  rows:comparisonRows, ownRows:customerViewRows, latest, years, chronicComparison, bonusView:leadership?BonusView:null, missingOnly:businessUnit||countryManager,

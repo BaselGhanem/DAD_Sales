@@ -40,20 +40,18 @@
    </tr></thead><tbody></tbody><tfoot></tfoot></table>`;
  }
 
- function createTable(title,dimensions,drill){
+ function createItemTable(){
   const panel=document.createElement(`section`);
   panel.className=`panel bonus-panel`;
   panel.innerHTML=`
-   <div class="section-head"><h2>${title}</h2></div>
+   <div class="section-head"><h2>Bonus by item</h2></div>
    <div class="bonus-controls">
-    ${dimensions.length>1?`<label>Group by<select>${dimensions.map(([key,label])=>`<option value="${key}">${label}</option>`).join(``)}</select></label>`:``}
     <label>Sort by<select data-sort><option value="bonus">Bonus Units</option><option value="rate">Bonus %</option></select></label>
    </div>
    <p class="bonus-empty" hidden>No transactions match your filters.</p>
    <div class="bonus-table"></div>
    <div class="pagination"><button type="button" data-prev>Previous</button><span></span><button type="button" data-next>Next</button></div>
-   ${drill?`<section class="bonus-detail" hidden><div class="section-head"><h3></h3><button type="button">Close</button></div><div class="bonus-table">${table(`Customer`)}</div><div class="pagination"><button type="button" data-prev>Previous</button><span></span><button type="button" data-next>Next</button></div></section>`:``}`;
-  const group=panel.querySelector(`select:not([data-sort])`);
+   <section class="bonus-detail" hidden><div class="section-head"><h3></h3><button type="button">Close</button></div><div class="bonus-table">${table(`Customer`)}</div><div class="pagination"><button type="button" data-prev>Previous</button><span></span><button type="button" data-next>Next</button></div></section>`;
   const sort=panel.querySelector(`[data-sort]`);
   const host=panel.querySelector(`.bonus-table`);
   const paging=panel.querySelector(`.pagination`);
@@ -82,7 +80,7 @@
   }
 
   function closeDetails(){
-   if(!details||details.hidden)return;
+   if(details.hidden)return;
    details.hidden=true;
    opener?.setAttribute(`aria-expanded`,`false`);
   }
@@ -106,43 +104,36 @@
    closeDetails();
    page=index;
    const visible=totals.slice((page-1)*size,page*size);
-   host.querySelector(`tbody`).innerHTML=visible.map(total=>`<tr><th scope="row">${drill
-    ?`<button type="button" class="customer-link" aria-expanded="false">${escape(total.name)}</button>`
-    :escape(total.name)}</th>${cells(total)}</tr>`).join(``);
-   if(drill)host.querySelectorAll(`button`).forEach((button,i)=>button.onclick=()=>openItem(button,visible[i]));
+   host.querySelector(`tbody`).innerHTML=visible.map(total=>`<tr><th scope="row"><button type="button" class="customer-link" aria-expanded="false">${escape(total.name)}</button></th>${cells(total)}</tr>`).join(``);
+   host.querySelectorAll(`button`).forEach((button,i)=>button.onclick=()=>openItem(button,visible[i]));
    paginate(paging,page,totals.length,showPage);
   }
 
   function render(data){
    source=data;
-   const key=group?.value??dimensions[0][0];
-   const label=dimensions.find(([value])=>value===key)[1];
    const metric=sort.value===`rate`?total=>S.bonusRate(total.bonus,total.units):total=>total.bonus;
-   totals=S.bonusSummary(source,key).sort((a,b)=>(metric(b)??-Infinity)-(metric(a)??-Infinity)||a.name.localeCompare(b.name));
-   host.innerHTML=table(label);
+   totals=S.bonusSummary(source,`item`).sort((a,b)=>(metric(b)??-Infinity)-(metric(a)??-Infinity)||a.name.localeCompare(b.name));
+   host.innerHTML=table(`Item`);
    panel.querySelector(`.bonus-empty`).hidden=source.length>0;
    host.hidden=!source.length;
    host.querySelector(`tfoot`).innerHTML=`<tr><th scope="row">Total</th>${cells(S.bonusSummary(source)[0]??empty)}</tr>`;
    showPage(1);
   }
 
-  if(group)group.onchange=()=>render(source);
   sort.onchange=()=>render(source);
-  if(details)details.querySelector(`.section-head button`).onclick=()=>{
+  details.querySelector(`.section-head button`).onclick=()=>{
    closeDetails();
    opener?.focus();
   };
   return {panel,render};
  }
 
- window.BonusView={card,updateCard,quantity,percent,init({dimensions}){
+ window.BonusView={card,updateCard,quantity,percent,init(){
   const overview=card(document.getElementById(`units`),`bonusUnits`);
-  const performance=createTable(`Bonus performance`,dimensions,false);
-  const products=createTable(`Bonus by item`,[[`item`,`Item`]],true);
-  document.getElementById(`charts`).before(performance.panel,products.panel);
+  const products=createItemTable();
+  document.getElementById(`charts`).before(products.panel);
   return {render(rows){
    updateCard(overview,S.bonusSummary(rows)[0]);
-   performance.render(rows);
    products.render(rows);
   }};
  }};
