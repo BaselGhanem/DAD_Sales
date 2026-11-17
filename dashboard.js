@@ -6,7 +6,7 @@ const filters=Object.fromEntries(Object.keys(dimensions).map(k=>[k,new Set()]));
 const reducedLoaderMotion=matchMedia(`(prefers-reduced-motion: reduce)`).matches;
 let rows=[],latest,selectedYear,period=`month`,page=1,charts={},targetRows=[],session,user,comparisonMode;
 const years=new Map();
-let archivesForRefresh=[];
+let archivesForRefresh=[],bonusView;
 const unavailableYears=[];
 const esc=s=>String(s??``).replace(/[&<>"']/g,c=>({[`&`]:`&amp;`,[`<`]:`&lt;`,[`>`]:`&gt;`,[`"`]:`&quot;`,[`'`]:`&#39;`})[c]);
 const getSession=()=>{for(const storage of [localStorage,sessionStorage]){try{const val=JSON.parse(storage.getItem(`dad_sales_session_v1`));if(val&&Number.isFinite(val.expiresAt)&&val.expiresAt>Date.now()&&val.savedAt<=Date.now())return val}catch{}}return null};
@@ -49,7 +49,7 @@ function setPeriod(value){
 }
 function loadSales(source={}){
  return new Promise((resolve,reject)=>{
-  const worker=new Worker(`parser.worker.js?v=annual_archive_2`);
+  const worker=new Worker(`parser.worker.js?v=bonus_phase_1`);
   const finish=(callback,value)=>{clearTimeout(timeout);worker.terminate();callback(value)};
   const timeout=setTimeout(()=>finish(reject,Error(`Data loading timed out. Please try again.`)),90000);
   worker.onmessage=({data})=>data.error?finish(reject,Error(data.error)):finish(resolve,data);
@@ -99,7 +99,7 @@ const previous=S.sum(S.subset(rows,previousFrom,previousTo,comparisonFilters).fi
 })),coverage=[...years.entries()].sort(([a],[b])=>a.localeCompare(b)).reduce((next,[year,{earliest,end}])=>{
  if(next>previousTo||end<next||next.slice(0,4)!==year||earliest>next)return next;
  return S.iso(Date.parse(end)+day);
-},previousFrom)>previousTo;$(`comparison`).className=``;if(!coverage){$(`comparison`).textContent=`Comparison unavailable for these dates.`}else if(previous<=0){$(`comparison`).textContent=`Change vs. ${annual?`same period last year`:`previous period`}: ${fmt(m.net-previous)}`}else{const change=(m.net-previous)/previous*100;$(`comparison`).textContent=`${change>=0?`+`:``}${fmt(change)}% vs. ${annual?`same period last year`:`previous period`}`;$(`comparison`).className=change>=0?`positive`:`negative`}$(`comparisonRange`).textContent=`${dateLabel(previousFrom)} — ${dateLabel(previousTo)}`;renderFilters();renderCharts(current);renderTargets();renderTable(current)}
+},previousFrom)>previousTo;$(`comparison`).className=``;if(!coverage){$(`comparison`).textContent=`Comparison unavailable for these dates.`}else if(previous<=0){$(`comparison`).textContent=`Change vs. ${annual?`same period last year`:`previous period`}: ${fmt(m.net-previous)}`}else{const change=(m.net-previous)/previous*100;$(`comparison`).textContent=`${change>=0?`+`:``}${fmt(change)}% vs. ${annual?`same period last year`:`previous period`}`;$(`comparison`).className=change>=0?`positive`:`negative`}$(`comparisonRange`).textContent=`${dateLabel(previousFrom)} — ${dateLabel(previousTo)}`;renderFilters();renderCharts(current);renderTargets();renderTable(current);bonusView?.render(current)}
 try{
 session=getSession();if(!session||session.role!==pageRole){location.replace(`index.html`);return}
 if(typeof Chart===`undefined`)throw Error(`Unable to load page components. Check your connection and try again.`);
@@ -165,9 +165,12 @@ if (pageRole === `rep` && targetView) {
     });
   });
 }
+if(leadership)bonusView=BonusView.init({
+ dimensions:[...(countryManager?[[`businessUnit`,`Business unit`]]:[]),...(businessUnit||countryManager?[[`team`,`Team`]]:[]),[`rep`,`Medical representative`]]
+});
 const opportunityProfileContext=window.SalesOpportunities.init({rows:comparisonRows,ownRows:customerViewRows,latest,years,chronicComparison});
 window.CustomerProfiles.init({
- rows:comparisonRows, ownRows:customerViewRows, latest, years, chronicComparison, missingOnly:businessUnit||countryManager,
+ rows:comparisonRows, ownRows:customerViewRows, latest, years, chronicComparison, bonusView:leadership?BonusView:null, missingOnly:businessUnit||countryManager,
  getContext(target) {
   if(target.closest(`#opportunities`))return opportunityProfileContext();
   const selected=Object.fromEntries(Object.entries(filters).map(([key,values])=>[key,new Set(values)]));

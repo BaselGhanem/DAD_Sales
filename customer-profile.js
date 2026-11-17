@@ -29,10 +29,11 @@ function calculate(company,ownRows,customer,from,to,context){
  return {own,other,companySales,otherValue,net:S.sum(own),units:S.sum(own,`units`),last,products};
 }
 window.CustomerProfileMath={calculate};
-window.CustomerProfiles={init({rows,ownRows,latest,years,getContext,missingOnly=false,chronicComparison=false}){
+window.CustomerProfiles={init({rows,ownRows,latest,years,getContext,missingOnly=false,chronicComparison=false,bonusView=null}){
  let customer,context,inheritedContext,chart,page=1,otherPage=1,model,opener,profilePeriod=`custom`;
  const dialog=$(`customerProfile`),from=$(`profileFrom`),to=$(`profileTo`);
  const date=d=>d?d.split(`-`).reverse().join(`/`):`—`;
+ const bonusCard=bonusView?.card($(`profileUnits`),`profileBonus`);
  const otherDetails=$(`profileOtherDetails`);
  if(chronicComparison){
   $(`profileOther`).previousElementSibling.textContent=`Net purchases of other Chronic items`;
@@ -83,7 +84,21 @@ window.CustomerProfiles={init({rows,ownRows,latest,years,getContext,missingOnly=
   $(`profileMonth`).textContent=SalesYears.monthLabel(year,latest,years);
   $(`profileYear`).textContent=year===latest.slice(0,4)?`Year to date`:`Full year`;
   for(const [id,period] of [[`profileMonth`,`month`],[`profileYear`,`year`]]){$(id).classList.toggle(`active`,profilePeriod===period);$(id).setAttribute(`aria-pressed`,`${profilePeriod===period}`)}if(!from.value||!to.value||from.value>to.value){$(`profileStatus`).textContent=`Select a valid date range.`;return}$(`profileStatus`).textContent=``;page=otherPage=1;model=calculate(rows,ownRows,customer,from.value,to.value,context);KpiCounter.set(`profileNet`,model.net);if(model.products.length===1||new Set(model.own.map(r=>r.item)).size===1)KpiCounter.set(`profileUnits`,model.units);else KpiCounter.text(`profileUnits`,`Please select one SKU`);$(`profileLast`).textContent=date(model.last);KpiCounter.set(`profileOther`,model.otherValue);renderOtherDetails();
- for(const [status,id] of [[`active`,`profileActive`],[`stopped`,`profileStopped`],[`missing`,`profileMissing`]]){const list=status===`missing`?missingProducts(customer,from.value,to.value,inheritedContext):model.products.filter(p=>p.status===status),host=$(id);host.replaceChildren();if(!list.length){host.textContent=`No items found.`;continue}for(const product of list){const entry=document.createElement(`div`);entry.className=`profile-product`;const title=document.createElement(`strong`);title.textContent=product.item;entry.append(title);if(status===`active`){const text=document.createElement(`span`);text.textContent=`Net sales ${fmt(product.value)} · Units ${fmt(product.units)}`;entry.append(text)}host.append(entry)}}
+ const bonusRows=bonusView&&model.own.filter(row=>
+  inheritedContext.matchesPortfolio(row)&&inheritedContext.matchesItem(row)&&
+  inheritedContext.matchesArea(row)&&(!inheritedContext.months.size||inheritedContext.months.has(row.month))
+ );
+ const bonusByItem=bonusView?new Map(S.bonusSummary(bonusRows,`item`).map(total=>[total.name,total])):null;
+ if(bonusView)bonusView.updateCard(bonusCard,S.bonusSummary(bonusRows)[0]);
+ for(const [status,id] of [[`active`,`profileActive`],[`stopped`,`profileStopped`],[`missing`,`profileMissing`]]){const list=status===`missing`?missingProducts(customer,from.value,to.value,inheritedContext):model.products.filter(p=>p.status===status),host=$(id);host.replaceChildren();if(!list.length){host.textContent=`No items found.`;continue}for(const product of list){const entry=document.createElement(`div`);entry.className=`profile-product`;const title=document.createElement(`strong`);title.textContent=product.item;entry.append(title);if(status===`active`){const text=document.createElement(`span`);text.textContent=`Net sales ${fmt(product.value)} · Units ${fmt(product.units)}`;entry.append(text);
+ if(bonusView){
+  const bonus=document.createElement(`span`);
+  const total=bonusByItem.get(product.item);
+  bonus.textContent=total
+   ?`Bonus ${bonusView.quantity(total.bonus)} units · ${bonusView.percent(total)} · ${fmt(total.units)} net units`
+   :`Bonus —`;
+  entry.append(bonus);
+ }}host.append(entry)}}
   renderTrend();
   renderTable();
  }

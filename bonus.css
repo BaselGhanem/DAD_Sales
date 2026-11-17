@@ -1,0 +1,26 @@
+.bonus-panel { margin-block: 16px; min-width: 0; }
+.bonus-controls { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-bottom: 12px; }
+.bonus-controls label { display: grid; gap: 4px; color: var(--muted); font-size: 12px; font-weight: 700; }
+.bonus-panel th[scope="row"] { text-align: left; overflow-wrap: anywhere; color: var(--navy); }
+.bonus-panel td { font-variant-numeric: tabular-nums; }
+.bonus-panel tfoot { background: #edf7f7; font-weight: 800; }
+.bonus-detail { margin-top: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; }
+.bonus-detail h3 { margin: 0; overflow-wrap: anywhere; }
+.bonus-kpi p { color: #087f83; font-weight: 700; }
+.bonus-mobile-rate { display: none; }
+@media (max-width: 680px) {
+ .bonus-panel th[scope="row"] { display: block; padding: 0 0 6px; }
+ .bonus-panel tr { min-width: 0; }
+ .bonus-panel td.bonus-rate { display: none; }
+ .bonus-panel td[data-label="Bonus Units"] { display: grid; grid-template-columns: minmax(0,1fr) auto; }
+ .bonus-mobile-rate { display: block; grid-column: 2; text-align: right; color: #087f83; }
+ .bonus-panel tfoot { display: block; border-radius: 12px; }
+}
+@media (min-width: 1000px) {
+ .kpis.has-bonus { grid-template-columns: repeat(5, minmax(0,1fr)); }
+}
+@media (max-width: 680px) {
+ .bonus-panel td[data-label="Bonus Units"]::before { content: "Bonus"; }
+ .bonus-panel td[data-label="Bonus Units"] { column-gap: 12px; row-gap: 0; text-align: right; }
+ .bonus-panel td[data-label="Bonus Units"]::before { text-align: left; }
+}

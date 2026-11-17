@@ -1,4 +1,4 @@
-/* Pure sales calculations shared by UI and verification. No bonus fields. */
+/* Pure sales calculations shared by UI and verification. */
 (function(root){
 const iso=d=>new Date(d).toISOString().slice(0,10);
 const sum=(rows,key=`value`)=>rows.reduce((total,r)=>total+r[key],0);
@@ -7,6 +7,18 @@ const match=(r,filters,except=``)=>Object.entries(filters).every(([k,s])=>k===ex
 const subset=(rows,from,to,filters={})=>rows.filter(r=>r.date>=from&&r.date<=to&&match(r,filters));
 const shiftMonth=(date,n)=>{const d=new Date(`${date}T00:00:00Z`),day=d.getUTCDate();d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+n);const last=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();d.setUTCDate(Math.min(day,last));return iso(d)};
 const metrics=rows=>({net:sum(rows),units:sum(rows,`units`),customers:aggregate(rows,`customer`).filter(x=>x[1]>0).length,items:aggregate(rows,`item`,`units`).filter(x=>x[1]>0).length});
-root.Sales={iso,sum,aggregate,match,subset,shiftMonth,metrics};
+const bonusRate=(bonus,units)=>bonus===null||units===0?null:bonus/units;
+function bonusSummary(rows,key){
+ const groups=new Map();
+ for(const row of rows){
+  const name=key?row[key]:null;
+  if(!groups.has(name))groups.set(name,{name,units:0,bonus:0});
+  const total=groups.get(name);
+  total.units+=row.units;
+  total.bonus=total.bonus===null||!Number.isFinite(row.bonus)?null:total.bonus+row.bonus;
+ }
+ return [...groups.values()];
+}
+root.Sales={iso,sum,aggregate,match,subset,shiftMonth,metrics,bonusRate,bonusSummary};
 if(typeof module!==`undefined`)module.exports=root.Sales;
 })(typeof window!==`undefined`?window:globalThis);
