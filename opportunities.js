@@ -108,6 +108,7 @@ KpiCounter.set(`oppCount`,current.length);KpiCounter.set(`oppValue`,current.redu
  $(`oppMonth`).onclick=()=>setPeriod(`month`);
  $(`oppYear`).onclick=()=>setPeriod(`year`);
  $(`oppClear`).onclick=()=>{selectedUnits.clear();selectedSupervisors.clear();for(const id of [`oppUnitSearch`,`oppSupervisorSearch`])if($(id))$(id).value=``;selectedTeams.clear();selectedReps.clear();$(`oppTeamSearch`).value=``;$(`oppRepSearch`).value=``;areas.clear();selectedItems.clear();item.value=``;group.value=``;query.value=``;minValue.value=``;maxValue.value=``;minMissing.value=``;$(`oppAreaSearch`).value=``;$(`oppItemSearch`).value=``;for(const label of [...options.children,...itemOptions.children])label.hidden=false;for(const box of options.querySelectorAll(`input`))box.checked=false;render()};$(`oppPrev`).onclick=()=>{page--;table()};$(`oppNext`).onclick=()=>{page++;table()};
+ const SALES_VS_TARGET_ENABLED = false; // Restore to true when the feature is re-enabled.
  const comparison = $(`comparison-page`);
  const tabs = [...document.querySelectorAll(`#dashboard [data-tab]`)];
  const mobileButtons = [...document.querySelectorAll(`.mobile-nav button`)];
@@ -116,6 +117,7 @@ KpiCounter.set(`oppCount`,current.length);KpiCounter.set(`oppValue`,current.redu
   button.setAttribute(`aria-pressed`, `${selected}`);
  };
  function showView(name, section = `overview`) {
+  if (!SALES_VS_TARGET_ENABLED && name === `sales-target`) name = `sales`;
   const isSales = name === `sales`;
   const isComparison = name === `sales-target` && comparison;
   priorityMode = name === `priorities`;
