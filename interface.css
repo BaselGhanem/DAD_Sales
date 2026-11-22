@@ -328,7 +328,7 @@ body .customer-profile .presets button:is(.active,[aria-pressed="true"]) {
 
 @media (max-width: 680px) {
   body:has(#dashboard) {
-    --portal-nav-offset: calc(110px + env(safe-area-inset-bottom));
+    --portal-nav-offset: calc(70px + env(safe-area-inset-bottom));
     padding-bottom: var(--portal-nav-offset);
   }
 
